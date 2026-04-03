@@ -14,17 +14,22 @@ workflows:
           npm install @capacitor/ios @capacitor/core @capacitor/cli
       - name: Capacitor Sync
         script: |
-          # Isso atualiza o Bundle ID dentro da pasta ios para br.com.obpcschool
+          # Atualiza o projeto nativo com o novo appId do seu JSON
           npx cap sync ios
+      - name: Force Bundle ID Update
+        script: |
+          # Comando de segurança: troca 'salto' por 'obpcschool' nos arquivos do Xcode
+          sed -i '' 's/br.com.obpc.salto/br.com.obpcschool/g' ios/App/App.xcodeproj/project.pbxproj
       - name: Build iOS (.ipa)
         script: |
           cd ios/App
+          # Define a versão da build baseada na data/hora
           agvtool new-version -all $(date +%Y%m%d%H%M)
           
-          # Tenta usar os perfis (Certifique-se de que o perfil no site é br.com.obpcschool)
+          # Tenta usar os perfis (Certifique-se de que o perfil no site do Codemagic é br.com.obpcschool)
           xcode-project use-profiles --warn-only
           
-          # Faz o build usando o ID atualizado
+          # Build final
           xcode-project build-ipa \
             --project "App.xcodeproj" \
             --scheme "App" \
