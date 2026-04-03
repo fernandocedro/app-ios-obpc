@@ -14,14 +14,22 @@ workflows:
           npm install @capacitor/ios @capacitor/core @capacitor/cli
       - name: Capacitor Sync
         script: |
-          # Sincroniza seus arquivos da pasta www para a pasta ios
           npx cap sync ios
       - name: Build iOS (.ipa)
         script: |
-          # Mudamos de workspace para project para encontrar o arquivo que está no seu GitHub
+          cd ios/App
+          # Atualiza a versão para evitar conflito na App Store
+          agvtool new-version -all $(date +%Y%m%d%H%M)
+          
+          # 1. Este comando instala os certificados que você subiu no painel do Codemagic
+          xcode-project use-profiles
+          
+          # 2. Comando de build forçando a assinatura manual com os perfis instalados acima
           xcode-project build-ipa \
-            --project "ios/App/App.xcodeproj" \
-            --scheme "App"
+            --project "App.xcodeproj" \
+            --scheme "App" \
+            --clean \
+            --archive-flags "CODE_SIGN_STYLE=Manual"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
