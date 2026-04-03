@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "690083146419",
+    "project_id": "app-obpc-49823",
+    "storage_bucket": "app-obpc-49823.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:690083146419:android:9ac934595d7fab24299ec6",
+        "android_client_info": {
+          "package_name": "br.com.obpcschool"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCj65Fqt5A4DrZGmz2CbIld9gGb4M6A9_M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
