@@ -23,13 +23,15 @@ workflows:
           cd ios/App
           agvtool new-version -all $(date +%Y%m%d%H%M)
           
-          # COMANDO NOVO: Gera o arquivo de exportação usando os certificados do painel
-          xcode-project use-profiles
+          # Tenta buscar os perfis configurados no painel do Codemagic
+          xcode-project use-profiles --warn-only
           
-          # COMANDO DE BUILD: Agora ele deve encontrar o plist gerado acima
+          # Comando de build com limpeza e flags de assinatura manual
           xcode-project build-ipa \
             --project "App.xcodeproj" \
-            --scheme "App"
+            --scheme "App" \
+            --clean \
+            --archive-flags "CODE_SIGNING_REQUIRED=YES CODE_SIGNING_ALLOWED=YES CODE_SIGN_STYLE=Manual"
     artifacts:
       - build/ios/ipa/*.ipa
       - $HOME/library/developer/xcode/deriveddata/**/Build/Products/**/*.ipa
