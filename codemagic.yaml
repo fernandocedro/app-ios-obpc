@@ -7,6 +7,9 @@ workflows:
       node: latest
       xcode: latest
       cocoapods: default
+      vars:
+        XCODE_PROJECT: "ios/App/App.xcodeproj"
+        XCODE_SCHEME: "App"
     scripts:
       - name: Install dependencies
         script: |
@@ -18,6 +21,7 @@ workflows:
       - name: Build iOS (.ipa)
         script: |
           cd ios/App
+<<<<<<< HEAD
           # Atualiza a versão para evitar conflito na App Store
           agvtool new-version -all $(date +%Y%m%d%H%M)
           
@@ -25,13 +29,26 @@ workflows:
           xcode-project use-profiles
           
           # 2. Comando de build forçando a assinatura manual com os perfis instalados acima
+=======
+          agvtool new-version -all $(date +%Y%m%d%H%M)
+          
+          # Tenta buscar os perfis configurados no painel do Codemagic
+          xcode-project use-profiles --warn-only
+          
+          # Comando de build com limpeza e flags de assinatura manual
+>>>>>>> 649f5ffa37a6e9b011327f40e1135a661e66c370
           xcode-project build-ipa \
             --project "App.xcodeproj" \
             --scheme "App" \
             --clean \
+<<<<<<< HEAD
             --archive-flags "CODE_SIGN_STYLE=Manual"
+=======
+            --archive-flags "CODE_SIGNING_REQUIRED=YES CODE_SIGNING_ALLOWED=YES CODE_SIGN_STYLE=Manual"
+>>>>>>> 649f5ffa37a6e9b011327f40e1135a661e66c370
     artifacts:
       - build/ios/ipa/*.ipa
+      - $HOME/library/developer/xcode/deriveddata/**/Build/Products/**/*.ipa
     publishing:
       email:
         recipients:
