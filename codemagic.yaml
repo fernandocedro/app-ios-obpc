@@ -4,8 +4,6 @@ workflows:
     instance_type: mac_mini_m2
     max_build_duration: 60
     environment:
-      groups:
-        - app_store_credentials # Se você configurou grupos de variáveis no Codemagic
       node: latest
       xcode: latest
       cocoapods: default
@@ -14,15 +12,13 @@ workflows:
         script: |
           npm install
           npm install @capacitor/ios @capacitor/core @capacitor/cli
-      - name: Build Web Project
-        script: |
-          npm run build
       - name: Capacitor Sync
         script: |
+          # Sincroniza a pasta /www que já existe no seu projeto
           npx cap sync ios
       - name: Build iOS (.ipa)
         script: |
-          # Este comando compila o projeto nativo que você subiu na pasta /ios
+          # Compila o projeto nativo usando os certificados que você subiu no painel
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "App"
@@ -31,4 +27,4 @@ workflows:
     publishing:
       email:
         recipients:
-          - ferna@example.com # Coloque seu e-mail aqui para receber o alerta
+          - ferna@example.com
