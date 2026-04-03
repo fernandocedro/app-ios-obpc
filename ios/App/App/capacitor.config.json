@@ -1,0 +1,8 @@
+{
+	"appId": "br.com.obpcschool",
+	"appName": "OBPC Salto",
+	"webDir": "www",
+	"packageClassList": [
+		"PushNotificationsPlugin"
+	]
+}
