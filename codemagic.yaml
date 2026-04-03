@@ -7,6 +7,9 @@ workflows:
       node: latest
       xcode: latest
       cocoapods: default
+      vars:
+        XCODE_PROJECT: "ios/App/App.xcodeproj"
+        XCODE_SCHEME: "App"
     scripts:
       - name: Install dependencies
         script: |
@@ -15,18 +18,10 @@ workflows:
       - name: Capacitor Sync
         script: |
           npx cap sync ios
-      - name: Build iOS (.ipa)
+      - name: Prepare Version
         script: |
-          # 1. ENTRAR NA PASTA ONDE O PROJETO ESTÁ
           cd ios/App
-          
-          # 2. ATUALIZAR A VERSÃO (OPCIONAL, MAS AJUDA NO UPLOAD)
           agvtool new-version -all $(date +%Y%m%d%H%M)
-          
-          # 3. EXECUTAR O BUILD USANDO O ARQUIVO QUE VIMOS NO SEU GITHUB
-          xcode-project build-ipa \
-            --project "App.xcodeproj" \
-            --scheme "App"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
