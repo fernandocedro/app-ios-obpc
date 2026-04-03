@@ -14,13 +14,13 @@ workflows:
           npm install @capacitor/ios @capacitor/core @capacitor/cli
       - name: Capacitor Sync
         script: |
-          # Sincroniza a pasta /www que já existe no seu projeto
+          # Sincroniza seus arquivos da pasta www para a pasta ios
           npx cap sync ios
       - name: Build iOS (.ipa)
         script: |
-          # Compila o projeto nativo usando os certificados que você subiu no painel
+          # Mudamos de workspace para project para encontrar o arquivo que está no seu GitHub
           xcode-project build-ipa \
-            --workspace "ios/App/App.xcworkspace" \
+            --project "ios/App/App.xcodeproj" \
             --scheme "App"
     artifacts:
       - build/ios/ipa/*.ipa
