@@ -8,8 +8,8 @@ workflows:
       xcode: latest
       cocoapods: default
       vars:
-        XCODE_PROJECT: "ios/App/App.xcodeproj"
-        XCODE_SCHEME: "App"
+        # Substitua pelo seu ID da Apple ou deixe assim se for manual
+        APP_STORE_APPLE_ID: "ferna@example.com" 
     scripts:
       - name: Install dependencies
         script: |
@@ -18,12 +18,19 @@ workflows:
       - name: Capacitor Sync
         script: |
           npx cap sync ios
-      - name: Prepare Version
+      - name: Build iOS (.ipa)
         script: |
           cd ios/App
           agvtool new-version -all $(date +%Y%m%d%H%M)
+          
+          # Este comando abaixo tenta fazer o build e gerar o arquivo de exportação sozinho
+          xcode-project build-ipa \
+            --project "App.xcodeproj" \
+            --scheme "App" \
+            --archive-flags "-allowProvisioningUpdates"
     artifacts:
       - build/ios/ipa/*.ipa
+      - $HOME/library/developer/xcode/deriveddata/**/Build/Products/**/*.ipa
     publishing:
       email:
         recipients:
