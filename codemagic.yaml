@@ -14,17 +14,16 @@ workflows:
           npm install @capacitor/ios @capacitor/core @capacitor/cli
       - name: Capacitor Sync
         script: |
+          # Isso vai aplicar o novo ID br.com.obpcschool no projeto nativo
           npx cap sync ios
       - name: Build iOS (.ipa)
         script: |
           cd ios/App
-          # Atualiza a versão para evitar conflito na Apple
           agvtool new-version -all $(date +%Y%m%d%H%M)
           
-          # Instala os certificados do painel do Codemagic
-          xcode-project use-profiles
+          # Tenta usar os perfis (Garanta que o perfil no site é br.com.obpcschool)
+          xcode-project use-profiles --warn-only
           
-          # Executa o build
           xcode-project build-ipa \
             --project "App.xcodeproj" \
             --scheme "App" \
