@@ -14,16 +14,17 @@ workflows:
           npm install @capacitor/ios @capacitor/core @capacitor/cli
       - name: Capacitor Sync
         script: |
-          # Isso vai aplicar o novo ID br.com.obpcschool no projeto nativo
+          # Isso atualiza o Bundle ID dentro da pasta ios para br.com.obpcschool
           npx cap sync ios
       - name: Build iOS (.ipa)
         script: |
           cd ios/App
           agvtool new-version -all $(date +%Y%m%d%H%M)
           
-          # Tenta usar os perfis (Garanta que o perfil no site é br.com.obpcschool)
+          # Tenta usar os perfis (Certifique-se de que o perfil no site é br.com.obpcschool)
           xcode-project use-profiles --warn-only
           
+          # Faz o build usando o ID atualizado
           xcode-project build-ipa \
             --project "App.xcodeproj" \
             --scheme "App" \
