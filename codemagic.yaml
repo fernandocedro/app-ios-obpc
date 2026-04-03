@@ -14,14 +14,15 @@ workflows:
           npm install @capacitor/ios @capacitor/core @capacitor/cli
       - name: Capacitor Sync
         script: |
-          # Sincroniza seus arquivos da pasta www para a pasta ios
           npx cap sync ios
       - name: Build iOS (.ipa)
         script: |
-          # Mudamos de workspace para project para encontrar o arquivo que está no seu GitHub
+          # Usamos o comando de build padrão que gera o plist sozinho
+          agvtool new-version -all $(date +%Y%m%d%H%M)
           xcode-project build-ipa \
             --project "ios/App/App.xcodeproj" \
-            --scheme "App"
+            --scheme "App" \
+            --clean
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
