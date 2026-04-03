@@ -8,8 +8,8 @@ workflows:
       xcode: latest
       cocoapods: default
       vars:
-        # Mantenha seu e-mail da Apple aqui se for usar publicação automática
-        APP_STORE_APPLE_ID: "ferna@example.com" 
+        XCODE_PROJECT: "ios/App/App.xcodeproj"
+        XCODE_SCHEME: "App"
     scripts:
       - name: Install dependencies
         script: |
@@ -21,10 +21,12 @@ workflows:
       - name: Build iOS (.ipa)
         script: |
           cd ios/App
-          # Atualiza a build number para não dar conflito na Apple
           agvtool new-version -all $(date +%Y%m%d%H%M)
           
-          # Comando de build corrigido
+          # COMANDO NOVO: Gera o arquivo de exportação usando os certificados do painel
+          xcode-project use-profiles
+          
+          # COMANDO DE BUILD: Agora ele deve encontrar o plist gerado acima
           xcode-project build-ipa \
             --project "App.xcodeproj" \
             --scheme "App"
