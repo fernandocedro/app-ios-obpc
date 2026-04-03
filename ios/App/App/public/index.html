@@ -1,0 +1,1875 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="msapplication-tap-highlight" content="no">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <meta name="color-scheme" content="light dark">
+        <title>Igreja OBPC</title>
+        <script src="cordova.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <link rel="manifest" href="manifest.json">
+        <style>
+            /* Estilos de fonte do Google Fonts */
+            @import url('https://fonts.googleapis.com/css2?family=Anton&family=Boldonse&family=Funnel+Sans:ital,wght@0,300..800;1,300..800&family=Manrope:wght@200..800;1,200..800&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Unbounded:wght@200..900&display=swap');
+
+            
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            html, body {
+                height: 100%;
+            }
+
+            body {
+                background-color: #1F1C1C;
+                color: white;
+                font-family: "Funnel Sans", sans-serif;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            /* CSS para o Splash Screen e o Spinner */
+            .initial-splash-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: black;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999; /* Garante que fique acima de tudo */
+                color: #8498d7;
+                font-size: 1.5rem;
+                font-family: 'Anton', sans-serif;
+                text-align: center;
+            }
+
+            .spinner {
+                font-size: 3rem; /* Tamanho do spinner */
+                animation: spin 1.5s linear infinite;
+                margin-bottom: 20px;
+                color: #ffffff; /* Cor Laranja */
+            }
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            
+            /* Estilos da página de login e cadastro */
+            .auth-container {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                background-color: black;
+                color: white;
+                padding: 20px;
+                font-family: "Funnel Sans", sans-serif;
+            }
+            .auth-card {
+                
+                padding: 30px;
+                border-radius: 15px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+                width: 100%;
+                max-width: 400px;
+                color: #eee;
+                text-align: center;
+            }
+            .auth-card h2 {
+                color: #d4d4d4;
+                font-size: 2rem;
+                margin-bottom: 20px;
+            }
+            .form-group {
+                margin-bottom: 20px;
+                text-align: left;
+            }
+            .form-group label {
+                display: block;
+                margin-bottom: 5px;
+            }
+            .form-group input,
+            .form-group select,
+            .form-group .checkbox-group label,
+            .profile-form .form-group input[type="text"],
+            .profile-form .form-group input[type="date"],
+            .profile-form .form-group select,
+            .profile-form .form-group input[type="checkbox"] {
+                width: 100%;
+                padding: 12px;
+                border-radius: 8px;
+                border: 1px solid #FBBDA1;
+                background-color: #333;
+                color: white;
+                font-size: 1rem;
+            }
+            
+            /* Estilo para campos bloqueados/desativados */
+            .form-group input:disabled, 
+            .profile-form .form-group input:disabled {
+                background-color: #555;
+                color: #999;
+                cursor: not-allowed;
+                border-color: #777;
+            }
+
+            /* Estilo específico para input de tipo 'file' */
+            .profile-form .form-group input[type="file"] {
+                padding: 5px;
+            }
+            .form-group .checkbox-group {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .auth-button {
+                width: 100%;
+                padding: 12px;
+                border-radius: 8px;
+                background-color: #dddddd;
+                color: rgb(0, 0, 0);
+                font-weight: bold;
+                border: none;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+            .auth-button:hover {
+                background-color: #969696;
+            }
+
+            .forgot-password-container {
+                margin-top: 15px;
+                font-size: 0.85rem;
+            }
+            .forgot-password-container a {
+                color: #FBBDA1;
+                text-decoration: none;
+            }
+
+            .auth-message {
+                text-align: center;
+                margin-top: 10px;
+                font-size: 0.9rem;
+                color: #fca5a5;
+                min-height: 1.2rem;
+            }
+            .logo {
+                width: 250px;
+                height: auto;
+                margin-bottom: 20px;
+            }
+            .auth-switch {
+                margin-top: 20px;
+                font-size: 0.9rem;
+            }
+            .auth-switch a {
+                color: #FBBDA1;
+                text-decoration: none;
+                font-weight: bold;
+            }
+            .auth-switch a:hover {
+                text-decoration: underline;
+            }
+            
+            /* Estilos da página principal e de detalhes */
+            #app-container {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+            .main-content {
+                flex-grow: 1;
+                overflow-y: auto;
+                padding-bottom: 80px; 
+            }
+            .container-header {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                background-color: #1F1C1C;
+                padding: 15px 0;
+                position: sticky;
+                top: 0;
+                z-index: 10;
+            }
+            .header-top {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                padding: 10px;
+            }
+            .header-top h1 {
+                font-family: 'Anton', sans-serif;
+                font-size: 1.5rem;
+                letter-spacing: 2px;
+                color: #E25402;
+                margin: 0;
+            }
+            .header-top h1 span {
+                color: white;
+            }
+            .header-top-line {
+                width: 150px;
+                height: 2px;
+                background-color: #FBBDA1;
+                margin: 5px auto;
+            }
+            .user-info-area {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                padding: 20px 20px 10px 20px;
+            }
+            .user-info-left {
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+            }
+            .perfil-image img {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                border: 2px solid white;
+                margin-right: 15px;
+                object-fit: cover; 
+            }
+            .user-details {
+                display: flex;
+                flex-direction: column;
+            }
+            .user-details .text-user-name {
+                font-size: 1.2rem;
+                font-weight: bold;
+            }
+            .user-details .text-user-desc {
+                font-size: 0.9rem;
+                color: #ccc;
+            }
+            .user-info-right .cart-icon {
+                font-size: 2rem;
+                color: #E25402;
+                cursor: pointer;
+            }
+
+            .back-button-container {
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                width: 100%;
+                padding: 0 20px;
+            }
+            .back-button-container .back-button {
+                background: none;
+                border: none;
+                color: white;
+                font-size: 1rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+            }
+            .back-button-container .back-button i {
+                margin-right: 5px;
+            }
+            
+            /* Estilos para a seção "Nossas Aulas" */
+            .nossas-aulas {
+                padding: 20px;
+            }
+            .nossas-aulas h2, .container-material-apoio h2, .oferta-screen-container h2, .profile-screen-container h2 {
+                color: #FBBDA1;
+                text-align: left;
+                margin-bottom: 15px;
+            }
+            
+            /* Estilos para o carrossel de vídeos */
+            .video-carousel-container {
+                position: relative;
+                width: 100%;
+            }
+
+            .video-list-container {
+                display: flex;
+                gap: 20px;
+                overflow-x: scroll; 
+                scroll-snap-type: x mandatory; 
+                -webkit-overflow-scrolling: touch; 
+                padding-bottom: 20px; 
+            }
+
+            .video-list-container::-webkit-scrollbar {
+                height: 8px;
+            }
+
+            .video-list-container::-webkit-scrollbar-track {
+                background: #333;
+                border-radius: 10px;
+            }
+
+            .video-list-container::-webkit-scrollbar-thumb {
+                background: #E25402;
+                border-radius: 10px;
+            }
+
+            .video-item {
+                background-color: #000000;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+                flex-shrink: 0; 
+                width: 85%; 
+                scroll-snap-align: start; 
+            }
+
+            .video-item .video-thumbnail {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 16 / 9;
+                display: block;
+                object-fit: cover;
+                border-bottom: 2px solid #FBBDA1;
+            }
+            .video-item .video-details {
+                padding: 15px;
+            }
+            .video-item .video-details h3 {
+                font-size: 1.2rem;
+                margin-bottom: 5px;
+                color: white;
+            }
+            .video-item .video-details p {
+                font-size: 0.9rem;
+                color: #ccc;
+            }
+            
+            /* Estilos para a seção "Material de Apoio" */
+            .container-material-apoio {
+                padding: 20px;
+            }
+            .grid-container {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+                text-align: center;
+            }
+            .material-item {
+                cursor: pointer;
+            }
+            .material-item img {
+                width: 100%;
+                height: auto;
+                border-radius: 10px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            }
+
+            /* Estilos da tela de detalhes do material */
+            .material-detail-content {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 20px;
+            }
+            .material-detail-content img {
+                max-width: 100%;
+                height: auto;
+                border-radius: 10px;
+                margin-bottom: 20px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            }
+            .material-detail-content p {
+                font-size: 1.2rem;
+                text-align: justify;
+                word-wrap: break-word;
+            }
+
+            /* Estilos da nova tela de ofertas */
+            .oferta-screen-container {
+                padding: 20px;
+            }
+            .oferta-card {
+                background-color: #06224A;
+                border-radius: 15px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            .oferta-card img {
+                width: 100%;
+                height: auto;
+                border-radius: 10px;
+                margin-bottom: 15px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            }
+            .oferta-card h3 {
+                color: #E25402;
+                font-size: 1.5rem;
+                margin-bottom: 10px;
+            }
+            .oferta-card p {
+                font-size: 1rem;
+                color: #ccc;
+                line-height: 1.4;
+            }
+            
+            /* Estilos da tela de Notificações */
+            .notification-card {
+                background-color: #111;
+                border-radius: 10px;
+                padding: 15px;
+                margin-bottom: 15px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                border-left: 5px solid #FBBDA1;
+                transition: opacity 0.3s ease, border-left-color 0.3s ease;
+                position: relative;
+                cursor: pointer;
+                user-select: none;
+                -webkit-user-select: none;
+            }
+            .notification-card.read {
+                opacity: 0.5;
+                border-left-color: #555;
+            }
+            .notification-card h3 {
+                color: #FBBDA1;
+                font-size: 1.2rem;
+                margin-bottom: 5px;
+            }
+            .notification-card p {
+                color: #ddd;
+                font-size: 0.95rem;
+                line-height: 1.4;
+            }
+            .notification-card .notif-date {
+                font-size: 0.8rem;
+                color: #aaa;
+                margin-top: 10px;
+                text-align: right;
+            }
+
+            /* Estilos da tela de perfil */
+            .profile-screen-container {
+                padding: 20px;
+            }
+            .profile-form {
+                background-color: #000000;
+                padding: 20px;
+                border-radius: 15px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+            .profile-form .form-group label {
+                display: block;
+                margin-bottom: 5px;
+                font-size: 1rem;
+                color: #FBBDA1;
+            }
+            .save-profile-btn {
+                width: 100%;
+                padding: 12px;
+                border-radius: 8px;
+                background-color: #FBBDA1;
+                color: rgb(0, 0, 0);
+                font-weight: bold;
+                border: none;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+                margin-top: 20px;
+            }
+            .save-profile-btn:hover {
+                background-color: #d14a02;
+            }
+
+            .delete-account-btn {
+                width: 100%;
+                padding: 12px;
+                border-radius: 8px;
+                background-color: transparent;
+                color: #fca5a5;
+                font-weight: bold;
+                border: 1px solid #7f1d1d;
+                cursor: pointer;
+                margin-top: 10px;
+            }
+
+            .save-message {
+                text-align: center;
+                margin-top: 10px;
+                font-size: 0.9rem;
+                color: #fff;
+            }
+            .profile-image-upload {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            .profile-image-upload img {
+                width: 100px;
+                height: 100px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid white;
+            }
+
+            /* Classe para esconder telas */
+            .hidden-screen {
+                display: none;
+            }
+            /* Classe para exibir a tela ativa */
+            .active-screen {
+                display: block;
+            }
+
+            /* Estilos do Rodapé e Menu Lateral */
+            .container-menun-inferior {
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+                background-color: transparent;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 10px 0;
+                z-index: 10;
+            }
+
+            .container-footer {
+                display: flex;
+                justify-content: space-around;
+                background-color: rgba(0, 0, 0, 0.9);
+                padding: 10px 0;
+                position: fixed;
+                border-radius: 50px;
+                bottom: 52px;
+                width: 85%;
+                z-index: 10;
+                box-shadow:  rgba(156, 156, 156, 0.3) 3px 10px 15px;
+            }
+            .container-footer a {
+                color: white;
+                font-size: 1.5rem;
+                padding: 10px;
+            }
+            .container-footer i {
+                color: #FBBDA1;
+                font-size: 1.5rem;
+            }
+
+            .menu-oculto {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 250px;
+                height: 100%;
+                background-color: #000000;
+                z-index: 20;
+                transition: right 0.5s ease-in-out;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                padding-top: 50px;
+                padding-bottom: 20px;
+                overflow-y: auto;
+            }
+            .menu-oculto.active {
+                right: 0;
+            }
+            .btn-fecharOculto {
+                position: absolute;
+                top: 10px;
+                right: 15px;
+                font-size: 1.5rem;
+                color: white;
+                cursor: pointer;
+            }
+            .menu-opcoes-barra {
+                color: white;
+                padding: 15px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                display: flex; 
+            }
+            .menu-opcoes-barra:hover { background-color: rgba(255, 255, 255, 0.1); }
+            .menu-opcoes-barra i { color: #E25402; }
+
+            .menu-opcoes-barra a {
+                text-decoration: none;
+                color: white;
+                width: 100%;
+            }
+
+            .menu-opcoes-barra i {
+                margin-right: 10px;
+                color: #FBBDA1;
+            }
+
+            .loading-message, .error-message {
+                text-align: center;
+                padding: 20px;
+                color: #E25402;
+            }
+            .no-classes-message {
+                text-align: center;
+                padding: 20px;
+                color: #ccc;
+            }
+            .menu-footer {
+                padding: 15px;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .menu-footer .perfil-image {
+                display: flex;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+            .menu-footer .perfil-image img {
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                border: 2px solid white;
+                margin-right: 10px;
+                object-fit: cover;
+            }
+
+            /* Estilos para a tela do player de vídeo */
+            .video-player-screen {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: black;
+                z-index: 100;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .video-player-screen.hidden {
+                display: none;
+            }
+
+            .video-player-container {
+                position: relative;
+                width: 100%;
+                max-width: 900px;
+                aspect-ratio: 16 / 9;
+                background-color: #000;
+            }
+
+            .video-player-container iframe {
+                width: 100%;
+                height: 100%;
+                border: none;
+            }
+
+            .close-player-btn {
+                position: absolute;
+                top: 10px;
+                right: 20px;
+                font-size: 2rem;
+                color: white;
+                cursor: pointer;
+                z-index: 101;
+            }
+
+            /* Estilos para o Modal e Carteirinha */
+            .modal {
+                display: none; 
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0,0,0,0.8);
+                align-items: center;
+                justify-content: center;
+            }
+
+            .modal-content {
+                margin: auto;
+                display: block;
+                width: 80%;
+                max-width: 700px;
+            }
+
+            .close-modal {
+                position: absolute;
+                top: 15px;
+                right: 35px;
+                color: #f1f1f1;
+                font-size: 40px;
+                font-weight: bold;
+                transition: 0.3s;
+                cursor: pointer;
+            }
+
+            .member-card {
+                background: #3f3f3f;
+                border: 2px solid #e2e2e2;
+                border-radius: 15px;
+                padding: 20px;
+                width: 100%;
+                max-width: 350px;
+                margin: 20px auto;
+                color: white;
+                box-shadow: 0 5px 15px rgba(253, 253, 253, 0.4);
+                text-align: center;
+            }
+
+            .card-header img {
+                width: 90px;
+                height: 90px;
+                border-radius: 50%;
+                border: 3px solid white;
+                object-fit: cover;
+                margin-bottom: 10px;
+            }
+
+            .card-header h3 {
+                margin: 0;
+                font-size: 1.4rem;
+                color: #FBBDA1;
+            }
+            .card-body {
+                text-align: left;
+                margin-top: 20px;
+            }
+
+            .card-body p {
+                margin: 10px 0;
+                font-size: 1rem;
+            }
+            .card-body strong {
+                color: #FBBDA1;
+            }
+            .card-departments {
+                margin-top: 15px;
+                padding-top: 10px;
+                border-top: 1px solid #FBBDA1;
+            }
+
+            .card-departments h4 {
+                color: #FBBDA1;
+                margin-bottom: 10px;
+            }
+
+            .card-departments ul {
+                list-style: none;
+                padding: 0;
+                text-align: center;
+            }
+
+            .card-departments li {
+                background-color: #333;
+                border-radius: 5px;
+                padding: 5px 10px;
+                margin-bottom: 5px;
+                font-size: 0.9rem;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="initial-loading-splash" class="initial-splash-container">
+            <i class="fa-solid fa-spinner spinner"></i>
+            <img class="logo" alt="Igreja OBPC Logo" src="./img/logo-carrega.png" style="margin-bottom: 20px;">
+            <p>Aguarde...</p>
+        </div>
+        
+        <div id="auth-screen-container" class="auth-container" style="display: none;">
+            
+            <div id="login-card" class="auth-card">
+                <img class="logo" alt="Igreja OBPC Logo" src="./img/logo-carrega.png">
+                <h2>Login</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Senha</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="auth-button">Entrar</button>
+                    <div class="forgot-password-container">
+                        <a href="#" id="forgot-password-link">Esqueci minha senha</a>
+                    </div>
+                    <div id="login-message" class="auth-message"></div>
+                </form>
+                <div class="auth-switch">
+                    <p>Não tem uma conta? <a href="#" id="show-register-link">Cadastre-se</a></p>
+                </div>
+            </div>
+
+            <div id="register-card" class="auth-card" style="display: none;">
+                <img class="logo" alt="Igreja OBPC Logo" src="./img/logo.png">
+                <h2>Cadastro</h2>
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Senha</label>
+                        <input type="password" id="register-password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm-password">Confirmar Senha</label>
+                        <input type="password" id="confirm-password" required>
+                    </div>
+                    <button type="submit" class="auth-button">Cadastrar</button>
+                    <div id="register-message" class="auth-message"></div>
+                </form>
+                <div class="auth-switch">
+                    <p>Já tem uma conta? <a href="#" id="show-login-link">Faça Login</a></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="app-container" style="display: none;">
+            <header class="container-header">
+                <div class="header-top" id="header-logo-section">
+                    <img src="./img/logo.png" alt="">
+                </div>
+                <div class="header-top-line"></div>
+                <div class="user-info-area" id="header-user-section">
+                    <div class="user-info-left" id="user-profile-button">
+                        <div class="perfil-image">
+                            <img id="main-profile-img" src="https://placehold.co/60x60/E25402/FFFFFF" alt="Perfil">
+                        </div>
+                        <div class="user-details">
+                            <span class="text-user-name" id="user-name-display">Usuário</span>
+                            <span class="text-user-desc">Olá!</span>
+                        </div>
+                    </div>
+                    <div class="user-info-right">
+                    </div>
+                </div>
+            </header>
+    
+            <div class="main-content">
+                <div id="home-screen" class="app-screen">
+                    <section class="nossas-aulas">
+                        <h2>Vídeos:</h2>
+                        <div class="video-carousel-container">
+                            <div id="video-list-container" class="video-list-container">
+                                <div class="loading-message">Carregando aulas...</div>
+                            </div>
+                        </div>
+                    </section>
+            
+                    <section class="container-material-apoio">
+                        <h2>Reflexões:</h2>
+                        <div id="material-grid-container" class="grid-container">
+                            <div class="loading-message">Carregando materiais...</div>
+                        </div>
+                    </section>
+                </div>
+
+                <div id="oferta-screen" class="app-screen hidden-screen">
+                    <section class="oferta-screen-container">
+                        <h2>Ofertas e Dízimos</h2>
+                        <div id="ofertas-list-container">
+                            <div class="loading-message">Carregando ofertas...</div>
+                        </div>
+                    </section>
+                </div>
+
+                <div id="material-detail-container" class="app-screen hidden-screen">
+                    <section class="material-detail-content">
+                        <img id="detail-image" src="" alt="Material de Apoio">
+                        <p id="detail-text"></p>
+                    </section>
+                </div>
+
+                <div id="notifications-screen" class="app-screen hidden-screen">
+                    <section class="oferta-screen-container">
+                        <h2>Notificações</h2>
+                        <p style="font-size: 0.85rem; color:#aaa; margin-bottom: 15px;">Dica: Segure pressionado em uma notificação para apagá-la.</p>
+                        <div id="notifications-list-container">
+                            <div class="loading-message">Carregando notificações...</div>
+                        </div>
+                    </section>
+                </div>
+                
+                <div id="profile-screen" class="app-screen hidden-screen">
+                    <section class="profile-screen-container">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2>Meu Perfil</h2>
+                            <i id="member-card-icon" class="fa-solid fa-id-card" style="font-size: 2.2rem; color: #FBBDA1; cursor: pointer; display: none;"></i>
+                        </div>
+                        <form id="profile-form" class="profile-form">
+                            <div class="profile-image-upload">
+                                <img id="profile-preview-img" src="https://placehold.co/100x100/E25402/FFFFFF" alt="Pré-visualização do perfil">
+                                <input type="file" id="profileImage" accept="image/*">
+                            </div>
+                            <div class="form-group">
+                                <label for="firstName">Nome:</label>
+                                <input type="text" id="firstName" name="firstName">
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Sobrenome:</label>
+                                <input type="text" id="lastName" name="lastName">
+                            </div>
+                            <div class="form-group">
+                                <label for="genderSelect">Sexo:</label>
+                                <select id="gender" name="gender">
+                                    <option value="">Sexo:</option>
+                                    <option value="female">Feminino</option>
+                                    <option value="male">Masculino</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="address">Endereço:</label>
+                                <input type="text" id="address" name="address">
+                            </div>
+                            <div class="form-group">
+                                <label for="isBaptized">É Batizado?</label>
+                                <select id="isBaptized" name="isBaptized">
+                                    <option value="nao">Não</option>
+                                    <option value="sim">Sim</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="baptismDate">Data de Batismo:</label>
+                                <input type="date" id="baptismDate" name="baptismDate" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label for="conversionDate">Data de Conversão:</label>
+                                <input type="date" id="conversionDate" name="conversionDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="churchRole">Cargo na Igreja:</label>
+                                <select id="churchRole" name="churchRole">
+                                    <option value="">Selecione um cargo</option>
+                                    <option value="diacono">Diácono</option>
+                                    <option value="presbitero">Presbítero</option>
+                                    <option value="pastor">Pastor</option>
+                                    <option value="membro">Membro</option>
+                                </select>
+                            </div>
+                             <div class="form-group">
+                                <label for="marriedSelect">Estado civil:</label>
+                                <select id="marriedSelect" name="marriedSelect">
+                                    <option value="">Selecione</option>
+                                    <option value="solteiro">Solteiro</option>
+                                    <option value="Casado">Casado</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="marriedDate">Data do casamento:</label>
+                                <input type="date" id="marriedDate" name="marriedDate">
+                            </div>
+                            <button type="submit" class="save-profile-btn">Salvar Alterações</button>
+                            <button type="button" id="delete-account-btn" class="delete-account-btn">Excluir minha conta</button>
+                            <div id="save-message" class="save-message"></div>
+                        </form>
+                    </section>
+                </div>
+
+         
+       <div class="container-menun-inferior">
+               <footer class="container-footer">
+                    <div class="home">
+                        <a href="index.html" id="home-link"><i class="fa-solid fa-house"></i></a>
+                    </div>
+                    <div class="oferta">
+                        <a href="generoso.html" ><i class="fa-solid fa-heart"></i></i></a>
+                    </div>
+                    <div class="datas">
+                        <a href="events.html"><i class="fa-solid fa-calendar-day"></i></a>
+                    </div>
+                    <div class="mais">
+                        <i class="fa-solid fa-bars" id="btn-abrir-menu"></i>
+                    </div>
+                </footer>
+        </div>
+
+        <div class="menu-oculto" id="menu-oculto">
+            <div>
+                <div class="btn-fecharOculto" id="btn-fechar-menu">
+                    x
+                </div>
+                <div class="menu-opcoes">
+                    <div class="menu-opcoes-barra"><a href="biblia.html"><i class="fa-solid fa-book-bible"></i> Bíblia </a></div>
+                    <div class="menu-opcoes-barra"><a href="#" id="menu-notifications-link"><i class="fa-solid fa-bell"></i> Notificações</a></div>
+                    <div class="menu-opcoes-barra"><a href="notes.html"><i class="fa-solid fa-note-sticky"></i> Anotações</a></div>
+                    <div class="menu-opcoes-barra"><a href="leitura-diaria.html"><i class="fa-regular fa-calendar-check"></i> Leitura Diaria</a></div>
+                    <div class="menu-opcoes-barra"><a href="oracao.html"><i class="fa-solid fa-hands-praying"></i> Oração</a></div>
+                    <div class="menu-opcoes-barra"><a href="videos.html"><i class="fa-solid fa-circle-play"></i> Videos</a></div>
+                    <div class="menu-opcoes-barra"><a href="departamentos.html"><i class="fa-solid fa-id-card-clip"></i> Departamentos</a></div>
+                </div>
+            </div>
+            <div class="menu-footer">
+                <div class="perfil-image">
+                    <img id="menu-profile-img" src="https://placehold.co/50x50/E25402/FFFFFF" alt="Perfil">
+                    <div class="user-names">
+                        <span id="menu-user-name">Carregando...</span>
+                        <span id="menu-user-surname"></span>
+                    </div>
+                </div>
+                <div class="menu-opcoes-barra" id="logout-button"><i class="fa-solid fa-right-from-bracket"></i> Sair</div>
+            </div>
+        </div>
+
+        <div id="video-player-screen" class="video-player-screen hidden">
+            <span id="close-player-btn" class="close-player-btn">&times;</span>
+            <div class="video-player-container">
+                <iframe id="video-player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
+        </div>
+        
+        <div id="member-card-modal" class="modal">
+            <span class="close-modal" id="close-card-modal">&times;</span>
+            <div class="modal-content">
+                <div class="member-card" id="card-content">
+                    </div>
+            </div>
+        </div>
+
+
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+            import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, deleteUser } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+            import { getFirestore, collection, onSnapshot, query, doc, setDoc, getDoc, updateDoc, deleteDoc, orderBy, limit, arrayUnion, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+            import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+            
+        window.addEventListener('DOMContentLoaded', () => {
+
+            // Elementos da UI
+            const videoListContainer = document.getElementById('video-list-container');
+            const materialGridContainer = document.getElementById('material-grid-container');
+            const ofertasListContainer = document.getElementById('ofertas-list-container');
+            const btnAbrirMenu = document.getElementById('btn-abrir-menu');
+            const btnFecharMenu = document.getElementById('btn-fechar-menu');
+            const menuOculto = document.getElementById('menu-oculto');
+            const logoutButton = document.getElementById('logout-button');
+            
+            // Elementos de Autenticação
+            const authScreenContainer = document.getElementById('auth-screen-container');
+            const loginCard = document.getElementById('login-card');
+            const registerCard = document.getElementById('register-card');
+            const showRegisterLink = document.getElementById('show-register-link');
+            const showLoginLink = document.getElementById('show-login-link');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const loginMessage = document.getElementById('login-message');
+            const registerMessage = document.getElementById('register-message');
+            const forgotPasswordLink = document.getElementById('forgot-password-link');
+            
+            // Elementos da Aplicação Principal
+            const appContainer = document.getElementById('app-container');
+            const homeScreen = document.getElementById('home-screen');
+            const ofertaScreen = document.getElementById('oferta-screen');
+            const materialDetailContainer = document.getElementById('material-detail-container');
+            const detailImage = document.getElementById('detail-image');
+            const detailText = document.getElementById('detail-text');
+            const homeLink = document.getElementById('home-link');
+            const ofertaLink = document.getElementById('oferta-link');
+            
+            const videoPlayerScreen = document.getElementById('video-player-screen');
+            const videoPlayer = document.getElementById('video-player');
+            const closePlayerBtn = document.getElementById('close-player-btn');
+            
+            // Elementos de Notificações
+            const notificationsScreen = document.getElementById('notifications-screen');
+            const menuNotificationsLink = document.getElementById('menu-notifications-link');
+            const notificationsListContainer = document.getElementById('notifications-list-container');
+
+            // Elementos da tela de perfil
+            const profileScreen = document.getElementById('profile-screen');
+            const userProfileButton = document.getElementById('user-profile-button');
+            const profileForm = document.getElementById('profile-form');
+            const saveMessage = document.getElementById('save-message');
+            const firstNameInput = document.getElementById('firstName');
+            const lastNameInput = document.getElementById('lastName');
+            const addressInput = document.getElementById('address');
+            const isBaptizedInput = document.getElementById('isBaptized');
+            const baptismDateInput = document.getElementById('baptismDate');
+            const conversionDateInput = document.getElementById('conversionDate');
+            const churchRoleSelect = document.getElementById('churchRole');
+            const marriedSelect = document.getElementById('marriedSelect');
+            const marriedDate = document.getElementById('marriedDate');
+            const genderSelect = document.getElementById('gender');
+            const deleteAccountBtn = document.getElementById('delete-account-btn');
+            
+            // Elementos da foto de perfil
+            const profileImageInput = document.getElementById('profileImage');
+            const profilePreviewImg = document.getElementById('profile-preview-img');
+            const mainProfileImg = document.getElementById('main-profile-img');
+            const menuProfileImg = document.getElementById('menu-profile-img');
+
+            // Elementos da Carteirinha
+            const memberCardIcon = document.getElementById('member-card-icon');
+            const memberCardModal = document.getElementById('member-card-modal');
+            const closeCardModal = document.getElementById('close-card-modal');
+            const cardContent = document.getElementById('card-content');
+            
+            // Referência à tela de carregamento inicial
+            const initialLoadingSplash = document.getElementById('initial-loading-splash');
+            
+            // Variáveis de Estado
+            let currentUserProfile = null;
+            let db, auth, storage, userId;
+            let isFirebaseInitialized = false;
+            let appId = "default-app-id";
+            
+            // Variáveis para as notificações
+            let globalNotifications = [];
+            let userReadNotifs = [];
+            let userDeletedNotifs = [];
+
+            // Lógica para Travar/Destravar Data de Batismo
+            if (isBaptizedInput) {
+                isBaptizedInput.addEventListener('change', (e) => {
+                    if (e.target.value === 'sim') {
+                        baptismDateInput.disabled = false;
+                    } else {
+                        baptismDateInput.disabled = true;
+                        baptismDateInput.value = ''; 
+                    }
+                });
+            }
+
+            const setupPushNotifications = async (user) => {
+                if (!user || typeof Capacitor === 'undefined' || !Capacitor.isNativePlatform()) {
+                    console.log("Push: Ignorado (Ambiente Web ou Não Nativo)");
+                    return;
+                }
+
+                try {
+                    const PushNotifications = Capacitor.Plugins.PushNotifications;
+                    
+                    if (!PushNotifications) return;
+
+                    await PushNotifications.removeAllListeners();
+
+                    await PushNotifications.addListener('registration', async (token) => {
+                        console.log("Token Gerado:", token.value);
+                        if (db) {
+                            const userRef = doc(db, `artifacts/${appId}/users/${user.uid}/profile`, 'profile_data');
+                            await setDoc(userRef, { pushToken: token.value }, { merge: true });
+                        }
+                    });
+
+                    await PushNotifications.addListener('registrationError', (error) => {
+                        console.error('Erro Nativo no Firebase:', error);
+                    });
+
+                    await PushNotifications.addListener('pushNotificationReceived', (notification) => {
+                        alert(`IGREJA OBPC:\n${notification.title}\n${notification.body}`);
+                    });
+
+                    let perm = await PushNotifications.requestPermissions();
+                    
+                    if (perm.receive === 'granted') {
+                        setTimeout(async () => {
+                            await PushNotifications.register();
+                        }, 2000);
+                    }
+                } catch (error) {
+                    console.error("Erro na configuração de Push:", error);
+                }
+            };
+
+            const showScreen = (screenId) => {
+                const screens = document.querySelectorAll('.app-screen');
+                screens.forEach(screen => {
+                    screen.classList.add('hidden-screen');
+                    screen.classList.remove('active-screen');
+                });
+                
+                const screenToShow = document.getElementById(screenId);
+                if (screenToShow) {
+                    screenToShow.classList.remove('hidden-screen');
+                    screenToShow.classList.add('active-screen');
+                }
+                
+                let backButtonContainer = document.querySelector('.back-button-container');
+                const userArea = document.getElementById('header-user-section');
+                const headerLogo = document.getElementById('header-logo-section');
+                
+                if (screenId === 'material-detail-container' || screenId === 'profile-screen' || screenId === 'notifications-screen') {
+                    if (userArea) userArea.style.display = 'none';
+                    if (headerLogo) headerLogo.style.display = 'none';
+
+                    if (!backButtonContainer) {
+                        const header = document.querySelector('.container-header');
+                        backButtonContainer = document.createElement('div');
+                        backButtonContainer.classList.add('back-button-container');
+                        backButtonContainer.innerHTML = `
+                            <button class="back-button">
+                                <i class="fa-solid fa-arrow-left"></i> Voltar
+                            </button>
+                        `;
+                        header.insertBefore(backButtonContainer, header.children[0]);
+                        
+                        document.querySelector('.back-button').addEventListener('click', () => {
+                            showScreen('home-screen');
+                        });
+                    }
+                } else {
+                    if (userArea) userArea.style.display = 'flex';
+                    if (headerLogo) headerLogo.style.display = 'flex';
+                    if (backButtonContainer) {
+                        backButtonContainer.remove();
+                    }
+                }
+            };
+
+            const showLoginScreen = () => {
+                authScreenContainer.style.display = 'flex';
+                loginCard.style.display = 'block';
+                registerCard.style.display = 'none';
+                appContainer.style.display = 'none';
+                menuOculto.classList.remove('active');
+            };
+            
+            const showMainScreen = () => {
+                authScreenContainer.style.display = 'none';
+                appContainer.style.display = 'block';
+                showScreen('home-screen');
+            };
+            
+            const showVideoPlayer = (videoUrl) => {
+                const urlObj = new URL(videoUrl);
+                const videoId = urlObj.searchParams.get('v');
+                if (videoId) {
+                    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                    videoPlayer.src = embedUrl;
+                    videoPlayerScreen.classList.remove('hidden');
+                }
+            };
+
+            const hideVideoPlayer = () => {
+                videoPlayer.src = '';
+                videoPlayerScreen.classList.add('hidden');
+            };
+
+            const showMaterialDetail = (imageUrl, text) => {
+                detailImage.src = imageUrl;
+                detailText.textContent = text;
+                showScreen('material-detail-container');
+            };
+
+            // ==============================================
+            // LÓGICA DE NOTIFICAÇÕES (FILTRADA POR DEP)
+            // ==============================================
+            const renderNotifications = () => {
+                if (!notificationsListContainer) return;
+
+                const safeDeletedNotifs = userDeletedNotifs || [];
+                const safeReadNotifs = userReadNotifs || [];
+
+                const visibleNotifs = globalNotifications.filter(n => !safeDeletedNotifs.includes(n.id));
+
+                if (visibleNotifs.length === 0) {
+                    notificationsListContainer.innerHTML = '<div class="no-classes-message">Nenhuma notificação por enquanto.</div>';
+                    return;
+                }
+
+                notificationsListContainer.innerHTML = '';
+                visibleNotifs.forEach(notif => {
+                    const isRead = safeReadNotifs.includes(notif.id);
+                    
+                    const card = document.createElement('div');
+                    card.className = `notification-card ${isRead ? 'read' : ''}`;
+                    card.dataset.id = notif.id;
+
+                    let dateStr = 'Recentemente';
+                    if (notif.createdAt && typeof notif.createdAt.toDate === 'function') {
+                        dateStr = notif.createdAt.toDate().toLocaleString('pt-BR');
+                    } else if (notif.createdAt) {
+                        try { dateStr = new Date(notif.createdAt).toLocaleString('pt-BR'); } catch(e){}
+                    }
+
+                    card.innerHTML = `
+                        <h3>${notif.title || 'Aviso'}</h3>
+                        <p>${notif.body || ''}</p>
+                        <div class="notif-date">${dateStr}</div>
+                    `;
+
+                    let pressTimer;
+                    let isLongPress = false;
+
+                    const startPress = (e) => {
+                        isLongPress = false;
+                        pressTimer = setTimeout(() => {
+                            isLongPress = true;
+                            if (confirm('Deseja apagar esta notificação?')) {
+                                deleteNotification(notif.id);
+                            }
+                        }, 800); 
+                    };
+
+                    const cancelPress = () => {
+                        clearTimeout(pressTimer);
+                    };
+
+                    card.addEventListener('touchstart', startPress, {passive: true});
+                    card.addEventListener('touchend', cancelPress);
+                    card.addEventListener('touchmove', cancelPress);
+                    card.addEventListener('mousedown', startPress);
+                    card.addEventListener('mouseup', cancelPress);
+                    card.addEventListener('mouseleave', cancelPress);
+
+                    card.addEventListener('click', (e) => {
+                        if (!isLongPress && !isRead) {
+                            markNotificationAsRead(notif.id);
+                        }
+                    });
+
+                    notificationsListContainer.appendChild(card);
+                });
+            };
+
+            const markNotificationAsRead = async (notifId) => {
+                if (!userId || !db) return;
+                try {
+                    const userProfileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'profile_data');
+                    await updateDoc(userProfileRef, {
+                        readNotifications: arrayUnion(notifId)
+                    });
+                } catch (error) {
+                    console.error("Erro ao marcar como lida:", error);
+                }
+            };
+
+            const deleteNotification = async (notifId) => {
+                if (!userId || !db) return;
+                try {
+                    const userProfileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'profile_data');
+                    await updateDoc(userProfileRef, {
+                        deletedNotifications: arrayUnion(notifId)
+                    });
+                } catch (error) {
+                    console.error("Erro ao apagar notificação:", error);
+                }
+            };
+
+            const fetchAndRenderNotifications = (appId) => {
+                if (!db || !currentUserProfile) return;
+
+                // 1. Prepara a lista de permissões do usuário
+                let targets = ['all']; // Sempre vê o geral
+
+                if (currentUserProfile.departmentRequests && Array.isArray(currentUserProfile.departmentRequests)) {
+                    const approvedDepts = currentUserProfile.departmentRequests
+                        .filter(req => req.status === 'approved')
+                        .map(req => req.departmentId);
+                    
+                    targets = [...targets, ...approvedDepts];
+                }
+
+                // 2. Cria a query filtrada
+                const q = query(
+                    collection(db, `artifacts/${appId}/public/data/notifications`), 
+                    where("target", "in", targets),
+                    where("status", "==", "sent"),
+                    orderBy("createdAt", "desc")
+                );
+
+                onSnapshot(q, (snapshot) => {
+                    globalNotifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderNotifications();
+                }, (error) => {
+                    console.error("Erro ao carregar notificações filtradas:", error);
+                });
+            };
+
+            // ==============================================
+            // INTERFACE DO USUÁRIO
+            // ==============================================
+            const updateProfileUI = (profileData) => {
+                currentUserProfile = profileData; 
+                const userNameDisplay = document.getElementById('user-name-display');
+                const menuUserName = document.getElementById('menu-user-name');
+                
+                if (profileData) {
+                    const fullName = `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim();
+                    userNameDisplay.textContent = fullName || 'Usuário';
+                    menuUserName.textContent = fullName || 'Usuário';
+                    
+                    firstNameInput.value = profileData.firstName || '';
+                    lastNameInput.value = profileData.lastName || '';
+                    addressInput.value = profileData.address || '';
+                    
+                    const isBaptizedStatus = profileData.isBaptized || false;
+                    isBaptizedInput.value = isBaptizedStatus ? 'sim' : 'nao';
+                    
+                    if (isBaptizedStatus) {
+                        baptismDateInput.disabled = false;
+                        baptismDateInput.value = profileData.baptismDate || '';
+                    } else {
+                        baptismDateInput.disabled = true;
+                        baptismDateInput.value = '';
+                    }
+                    
+                    conversionDateInput.value = profileData.conversionDate || '';
+                    churchRoleSelect.value = profileData.churchRole || '';
+                    marriedSelect.value = profileData.married || '';
+                    marriedDate.value = profileData.marriedDate || '';
+                    genderSelect.value = profileData.gender || '';
+                    
+                    const imageUrl = profileData.profileImageUrl || 'https://placehold.co/60x60/E25402/FFFFFF';
+                    mainProfileImg.src = imageUrl;
+                    menuProfileImg.src = imageUrl;
+                    profilePreviewImg.src = imageUrl;
+
+                    userReadNotifs = profileData.readNotifications || [];
+                    userDeletedNotifs = profileData.deletedNotifications || [];
+                    
+                    // CRÍTICO: Após carregar o perfil, carrega as notificações do dep dele
+                    fetchAndRenderNotifications(appId);
+
+                    const hasApprovedDepts = profileData.departmentRequests && profileData.departmentRequests.some(d => d.status === 'approved');
+                    memberCardIcon.style.display = hasApprovedDepts ? 'block' : 'none';
+
+                } else {
+                    userNameDisplay.textContent = 'Usuário';
+                    menuUserName.textContent = 'Usuário';
+                    profileForm.reset();
+                    
+                    baptismDateInput.disabled = true;
+                    userReadNotifs = [];
+                    userDeletedNotifs = [];
+                    renderNotifications();
+                    
+                    const placeholderUrl = 'https://placehold.co/60x60/E25402/FFFFFF';
+                    mainProfileImg.src = placeholderUrl;
+                    menuProfileImg.src = placeholderUrl;
+                    profilePreviewImg.src = placeholderUrl;
+                    memberCardIcon.style.display = 'none';
+                }
+            };
+            
+            const fetchUserProfile = async () => {
+                if (!db || !userId) return;
+
+                const userProfileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'profile_data');
+                onSnapshot(userProfileRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const profileData = docSnap.data();
+                        updateProfileUI(profileData);
+                    } else {
+                        updateProfileUI(null);
+                    }
+                }, (error) => {
+                    console.error("Erro ao carregar dados do perfil:", error);
+                });
+            };
+            
+            // Listeners da UI
+            if (btnAbrirMenu) btnAbrirMenu.addEventListener('click', () => menuOculto.classList.add('active'));
+            if (btnFecharMenu) btnFecharMenu.addEventListener('click', () => menuOculto.classList.remove('active'));
+            if (closePlayerBtn) closePlayerBtn.addEventListener('click', () => hideVideoPlayer());
+            if (userProfileButton) userProfileButton.addEventListener('click', () => showScreen('profile-screen'));
+
+            if (menuNotificationsLink) {
+                menuNotificationsLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showScreen('notifications-screen');
+                    menuOculto.classList.remove('active'); 
+                });
+            }
+
+            if (showRegisterLink) {
+                showRegisterLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loginCard.style.display = 'none';
+                    registerCard.style.display = 'block';
+                });
+            }
+
+            if (showLoginLink) {
+                showLoginLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    registerCard.style.display = 'none';
+                    loginCard.style.display = 'block';
+                });
+            }
+
+            if (forgotPasswordLink) {
+                forgotPasswordLink.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('email').value;
+                    if (!email) {
+                        loginMessage.textContent = "Digite seu e-mail para recuperar a senha.";
+                        loginMessage.style.color = '#fca5a5';
+                        return;
+                    }
+                    try {
+                        await sendPasswordResetEmail(auth, email);
+                        loginMessage.textContent = "E-mail de recuperação enviado!";
+                        loginMessage.style.color = '#86efac';
+                    } catch (error) {
+                        console.error("Erro ao enviar e-mail:", error);
+                        loginMessage.textContent = "Erro ao enviar e-mail. Verifique o endereço.";
+                        loginMessage.style.color = '#fca5a5';
+                    }
+                });
+            }
+
+            if (profileImageInput) {
+                profileImageInput.addEventListener('change', (event) => {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => profilePreviewImg.src = e.target.result;
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            if (profileForm) {
+                profileForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    if (!db || !userId || !storage) return;
+
+                    saveMessage.textContent = 'Salvando...';
+                    saveMessage.style.color = '#fff';
+                    
+                    let imageUrl = profilePreviewImg.src.startsWith('https://') ? profilePreviewImg.src : null;
+
+                    const file = profileImageInput.files[0];
+                    if (file) {
+                        try {
+                            const storageRef = ref(storage, `artifacts/${appId}/users/${userId}/profile/profile.jpg`);
+                            const snapshot = await uploadBytes(storageRef, file);
+                            imageUrl = await getDownloadURL(snapshot.ref);
+                        } catch (error) {
+                            console.error("Erro ao fazer upload:", error);
+                            saveMessage.textContent = 'Erro ao salvar a imagem.';
+                            saveMessage.style.color = '#fca5a5';
+                            return;
+                        }
+                    }
+
+                    const profileData = {
+                        firstName: firstNameInput.value, lastName: lastNameInput.value,
+                        gender: genderSelect.value, address: addressInput.value,
+                        isBaptized: isBaptizedInput.value === 'sim', 
+                        baptismDate: baptismDateInput.value,
+                        conversionDate: conversionDateInput.value, churchRole: churchRoleSelect.value,
+                        married: marriedSelect.value, marriedDate: marriedDate.value,
+                        profileImageUrl: imageUrl || '',
+                    };
+
+                    const userProfileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'profile_data');
+                    try {
+                        await setDoc(userProfileRef, profileData, { merge: true });
+                        saveMessage.textContent = 'Perfil salvo com sucesso!';
+                        saveMessage.style.color = '#86efac';
+                    } catch (error) {
+                        console.error("Erro ao salvar:", error);
+                        saveMessage.textContent = 'Erro ao salvar o perfil.';
+                        saveMessage.style.color = '#fca5a5';
+                    }
+                });
+            }
+
+            if (deleteAccountBtn) {
+                deleteAccountBtn.addEventListener('click', async () => {
+                    const confirmar = confirm("Você tem certeza que deseja EXCLUIR sua conta? Todos os seus dados serão apagados.");
+                    if (confirmar) {
+                        try {
+                            const user = auth.currentUser;
+                            const userProfileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'profile_data');
+                            await deleteDoc(userProfileRef);
+                            await deleteUser(user);
+                            alert("Conta excluída.");
+                            window.location.reload();
+                        } catch (error) {
+                            if (error.code === 'auth/requires-recent-login') {
+                                alert("Por segurança, você precisa sair e entrar novamente antes de excluir.");
+                            } else {
+                                alert("Erro ao excluir conta.");
+                            }
+                        }
+                    }
+                });
+            }
+
+            if (logoutButton) {
+                logoutButton.addEventListener('click', () => {
+                    signOut(auth).catch((error) => console.error("Erro ao desconectar:", error));
+                });
+            }
+
+            if (loginForm) {
+                loginForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('email').value;
+                    const password = document.getElementById('password').value;
+                    loginMessage.textContent = "Autenticando...";
+                    loginMessage.style.color = '#fff';
+
+                    try {
+                        await signInWithEmailAndPassword(auth, email, password);
+                        loginMessage.textContent = "Login bem-sucedido!";
+                        loginMessage.style.color = '#86efac';
+                    } catch (error) {
+                        let errorMessage = "Erro de login. Verifique seu email e senha.";
+                        if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                            errorMessage = "Email ou senha incorretos.";
+                        }
+                        loginMessage.textContent = errorMessage;
+                        loginMessage.style.color = '#fca5a5';
+                    }
+                });
+            }
+
+            if (registerForm) {
+                registerForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('register-email').value;
+                    const password = document.getElementById('register-password').value;
+                    const confirmPassword = document.getElementById('confirm-password').value;
+                    
+                    if (password !== confirmPassword) {
+                        registerMessage.textContent = 'As senhas não coincidem.';
+                        registerMessage.style.color = '#fca5a5';
+                        return;
+                    }
+
+                    registerMessage.textContent = "Criando conta...";
+                    registerMessage.style.color = '#fff';
+
+                    try {
+                        await createUserWithEmailAndPassword(auth, email, password);
+                        registerMessage.textContent = "Conta criada com sucesso!";
+                        registerMessage.style.color = '#86efac';
+                    } catch (error) {
+                        let errorMessage = "Erro ao criar a conta.";
+                        if (error.code === 'auth/email-already-in-use') errorMessage = "Este email já está em uso.";
+                        else if (error.code === 'auth/invalid-email') errorMessage = "O endereço de e-mail é inválido.";
+                        else if (error.code === 'auth/weak-password') errorMessage = "A senha deve ter pelo menos 6 caracteres.";
+                        registerMessage.textContent = errorMessage;
+                        registerMessage.style.color = '#fca5a5';
+                    }
+                });
+            }
+
+            if (homeLink) homeLink.addEventListener('click', (e) => { e.preventDefault(); showScreen('home-screen'); });
+            if (ofertaLink) ofertaLink.addEventListener('click', (e) => { e.preventDefault(); showScreen('oferta-screen'); });
+
+            memberCardIcon.addEventListener('click', async () => {
+                if (!currentUserProfile) return;
+
+                const approvedDepts = (currentUserProfile.departmentRequests || []).filter(d => d.status === 'approved');
+                const deptNames = await Promise.all(approvedDepts.map(async (req) => {
+                    const deptRef = doc(db, `artifacts/${appId}/public/data/departments/${req.departmentId}`);
+                    const deptSnap = await getDoc(deptRef);
+                    return deptSnap.exists() ? deptSnap.data().name : 'Desconhecido';
+                }));
+
+                let departmentsHtml = '<li>Nenhum</li>';
+                if (deptNames.length > 0) {
+                    departmentsHtml = deptNames.map(name => `<li>${name}</li>`).join('');
+                }
+
+                cardContent.innerHTML = `
+                    <div class="card-header">
+                        <img src="${currentUserProfile.profileImageUrl || 'https://placehold.co/90x90/FFFFFF/E25402?text=Membro'}" alt="Foto do Perfil">
+                        <h3>${currentUserProfile.firstName || ''} ${currentUserProfile.lastName || 'Membro'}</h3>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Cargo:</strong> ${currentUserProfile.churchRole || 'Não informado'}</p>
+                        <div class="card-departments">
+                            <h4>Departamentos</h4>
+                            <ul>${departmentsHtml}</ul>
+                        </div>
+                    </div>
+                `;
+                memberCardModal.style.display = 'flex';
+            });
+
+            closeCardModal.addEventListener('click', () => {
+                memberCardModal.style.display = 'none';
+            });
+
+            window.addEventListener('click', (event) => {
+                if (event.target == memberCardModal) {
+                    memberCardModal.style.display = "none";
+                }
+            });
+
+            const renderAulas = (docs) => {
+                if (docs.length === 0) {
+                    videoListContainer.innerHTML = '<div class="no-classes-message">Nenhuma aula encontrada.</div>';
+                    return;
+                }
+                videoListContainer.innerHTML = '';
+                docs.forEach(doc => {
+                    const data = doc.data();
+                    const videoItem = document.createElement('div');
+                    videoItem.classList.add('video-item');
+                    videoItem.setAttribute('data-video-url', data.videoUrl || '');
+                    videoItem.innerHTML = `
+                        <img class="video-thumbnail" src="${data.imageUrl || 'https://placehold.co/640x360/06224A/E25402?text=Sem+Imagem'}" alt="Thumbnail do vídeo">
+                        <div class="video-details">
+                            <h3>${data.text || 'Título não encontrado'}</h3>
+                        </div>`;
+                    videoItem.addEventListener('click', () => {
+                        const videoUrl = videoItem.getAttribute('data-video-url');
+                        if (videoUrl) showVideoPlayer(videoUrl);
+                    });
+                    videoListContainer.appendChild(videoItem);
+                });
+            };
+
+            const renderMaterialApoio = (docs) => {
+                if (docs.length === 0) {
+                    materialGridContainer.innerHTML = '<div class="no-classes-message">Nenhum material encontrado.</div>';
+                    return;
+                }
+                materialGridContainer.innerHTML = '';
+                docs.forEach(doc => {
+                    const data = doc.data();
+                    const imageUrl = data.imageUrl || 'https://placehold.co/150x150/06224A/E25402?text=Sem+Imagem';
+                    const text = data.text || 'Sem Título';
+                    const materialItem = document.createElement('div');
+                    materialItem.classList.add('material-item');
+                    materialItem.innerHTML = `<img class="image-size" src="${imageUrl}" alt="${text}">`;
+                    materialItem.addEventListener('click', () => showMaterialDetail(imageUrl, text));
+                    materialGridContainer.appendChild(materialItem);
+                });
+            };
+
+            const renderOfertas = (docs) => {
+                if (docs.length === 0) {
+                    ofertasListContainer.innerHTML = '<div class="no-classes-message">Nenhuma oferta encontrada.</div>';
+                    return;
+                }
+                ofertasListContainer.innerHTML = '';
+                docs.forEach(doc => {
+                    const data = doc.data();
+                    const ofertaCard = document.createElement('div');
+                    ofertaCard.classList.add('oferta-card');
+                    const imageUrl = data.imageUrl || 'https://placehold.co/400x200/06224A/E25402?text=Sem+Imagem';
+                    const title = data.title || 'Título não encontrado';
+                    const text = data.text || 'Descrição não encontrada';
+                    const paymentLink = data.paymentLink;
+                    ofertaCard.innerHTML = `
+                        ${paymentLink ? `<a href="${paymentLink}" target="_blank">` : ''}
+                        <img src="${imageUrl}" alt="${title}" ${paymentLink ? 'style="cursor: pointer;"' : ''}>
+                        ${paymentLink ? `</a>` : ''}
+                        <h3>${title}</h3>
+                        <p>${text}</p>`;
+                    ofertasListContainer.appendChild(ofertaCard);
+                });
+            };
+            
+            const fetchAndRenderMaterialApoio = (appId) => {
+                if (!db) return;
+                const q = query(collection(db, `artifacts/${appId}/public/data/materialApoio`));
+                onSnapshot(q, (snapshot) => renderMaterialApoio(snapshot.docs));
+            };
+
+            const fetchAndRenderOfertas = (appId) => {
+                if (!db) return;
+                const q = query(collection(db, `artifacts/${appId}/public/data/ofertas`));
+                onSnapshot(q, (snapshot) => renderOfertas(snapshot.docs));
+            };
+
+           const setupFirebase = () => {
+                if (isFirebaseInitialized) return;
+
+                try {
+                    let firebaseConfig;
+                    let explicitAppId = "default-app-id";
+
+                    if (typeof __firebase_config !== 'undefined' && typeof __app_id !== 'undefined') {
+                        firebaseConfig = JSON.parse(__firebase_config);
+                        appId = __app_id;
+                    } else {
+                        firebaseConfig = {
+                            apiKey: "AIzaSyArteycUkaN5-dClQ28oHSl-NoiL-s4NaY",
+                            authDomain: "app-obpc-49823.firebaseapp.com",
+                            projectId: "app-obpc-49823",
+                            storageBucket: "app-obpc-49823.firebasestorage.app",
+                            messagingSenderId: "690083146419",
+                            appId: "1:690083146419:web:c03301f1aca7dd2d299ec6",
+                            measurementId: "G-KJPSSSC575"
+                        };
+                        appId = explicitAppId;
+                    }
+                    
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+                    storage = getStorage(app);
+                    isFirebaseInitialized = true;
+
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            userId = user.uid;
+                            
+                            setupPushNotifications(user);
+                            showMainScreen(); 
+                            
+                            const q = query(collection(db, `artifacts/${appId}/public/data/videos`), orderBy("createdAt", "desc"), limit(4));
+                            onSnapshot(q, (snapshot) => {
+                                renderAulas(snapshot.docs);
+                            });
+                            
+                            fetchAndRenderMaterialApoio(appId);
+                            fetchAndRenderOfertas(appId);
+                            // fetchAndRenderNotifications(appId); // Removido daqui, agora é chamado pelo fetchUserProfile
+                            fetchUserProfile();
+                            
+                        } else {
+                            userId = null;
+                            showLoginScreen();
+                        }
+
+                        if (initialLoadingSplash) {
+                            initialLoadingSplash.style.display = 'none';
+                        }
+                    });
+
+                } catch (e) {
+                    console.error("Falha ao inicializar o Firebase:", e);
+                    if (initialLoadingSplash) initialLoadingSplash.style.display = 'none';
+                    if (videoListContainer) videoListContainer.innerHTML = '<div class="error-message">Falha ao conectar ao banco de dados.</div>';
+                }
+            };
+
+            setupFirebase();
+        });
+
+        document.addEventListener("deviceready", function () {
+            if (navigator && navigator.splashscreen) {
+                navigator.splashscreen.hide();
+            }
+        }, false);
+        
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/service-worker.js').catch(function(err) {
+                    console.log('Falha ao registrar o Service Worker:', err);
+                });
+            });
+        }
+        </script>
+    </body>
+</html>

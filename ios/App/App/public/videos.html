@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="msapplication-tap-highlight" content="no">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <meta name="color-scheme" content="light dark">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <title>Obpc School - Vídeos</title>
+        <style>
+            /* Estilos de fonte do Google Fonts */
+            @import url('https://fonts.googleapis.com/css2?family=Anton&family=Boldonse&family=Funnel+Sans:ital,wght@0,300..800;1,300..800&family=Manrope:wght@200..800;1,200..800&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Unbounded:wght@200..900&display=swap');
+            
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            html, body {
+                height: 100%;
+            }
+
+            body {
+                background-color: #1F1C1C;
+                color: white;
+                font-family: "Funnel Sans", sans-serif;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .main-content {
+                flex-grow: 1;
+                overflow-y: auto;
+                padding-bottom: 80px;
+            }
+
+            .container-header {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                background-color: #1F1C1C;
+                padding: 15px 0;
+                position: sticky;
+                top: 0;
+                z-index: 10;
+            }
+            .header-top {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                padding: 10px;
+            }
+            .header-top h1 {
+                font-family: 'Anton', sans-serif;
+                font-size: 1.5rem;
+                letter-spacing: 2px;
+                color: #E25402;
+                margin: 0;
+            }
+            .header-top h1 span {
+                color: white;
+            }
+            .header-top-line {
+                width: 150px;
+                height: 2px;
+                background-color: #FBBDA1;
+                margin: 5px auto;
+            }
+
+            /* Estilos da nova seção de vídeos */
+            .videos-container {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+                padding: 15px;
+            }
+            .video-card {
+                position: relative;
+                background-color: #000000;
+                border-radius: 15px;
+                overflow: hidden;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                text-decoration: none;
+                color: inherit;
+                display: flex;
+                flex-direction: column;
+                cursor: pointer; /* Adicionado para indicar que é clicável */
+            }
+            .video-card img {
+                width: 100%;
+                height: auto;
+                display: block;
+                object-fit: cover;
+            }
+            .video-info {
+                padding: 15px;
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            .video-info h3 {
+                font-size: 0.7rem;
+                color: #FBBDA1;
+                margin-bottom: 5px;
+                font-weight: bold;
+            }
+            .video-info p {
+                font-size: 0.8rem;
+                color: #ccc;
+                line-height: 1.3;
+                margin-top: 5px;
+            }
+            .video-title {
+                text-align: center;
+                color: #fff;
+                font-family: 'Open Sans', sans-serif;
+                font-weight: 600;
+                font-size: 1.5rem;
+                margin: 20px 0 10px;
+            }
+            .video-series-title {
+                color: #FBBDA1;
+                text-align: start;
+                margin-left: 20px;
+                font-family: 'Anton', sans-serif;
+                font-size: 1.5rem;
+                margin-top: 20px;
+            }
+            
+            /* Estilos do Rodapé e Menu Lateral */
+            .container-menun-inferior {
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+                background-color: transparent;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 10px 0;
+                z-index: 10;
+            }
+
+            .container-footer {
+                display: flex;
+                justify-content: space-around;
+                background-color: rgba(0, 0, 0, 0.9);
+                padding: 10px 0;
+                position: fixed;
+                border-radius: 50px;
+                bottom: 52px;
+                width: 85%;
+                z-index: 10;
+                box-shadow: rgba(255, 255, 255, 0.3) 0px 4px 15px;
+            }
+            .container-footer a {
+                color: white;
+                font-size: 1.5rem;
+                padding: 10px;
+            }
+            .container-footer i {
+                color: #FBBDA1;
+                font-size: 1.5rem;
+            }
+            .container-footer i {
+                color: #FBBDA1; font-size: 1.5rem;
+            }
+            
+            .menu-oculto {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 250px;
+                height: 100%;
+                background-color: #000000;
+                z-index: 20;
+                transition: right 0.5s ease-in-out;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                padding-top: 50px;
+                padding-bottom: 20px;
+                overflow-y: auto;
+            }
+            .menu-oculto.active {
+                right: 0;
+            }
+            .btn-fecharOculto {
+                position: absolute;
+                top: 10px;
+                right: 15px;
+                font-size: 1.5rem;
+                color: white;
+                cursor: pointer;
+            }
+            
+            .menu-opcoes-barra {
+                color: white;
+                padding: 15px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+            }
+
+            .menu-opcoes-barra:hover { background-color: rgba(255, 255, 255, 0.1); }
+
+            .menu-opcoes-barra a {
+                text-decoration: none;
+                color: white;
+                width: 100%;
+            }
+
+            .menu-opcoes-barra i {
+                margin-right: 10px;
+                color: #FBBDA1;
+            }
+            .menu-footer {
+                padding: 15px;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .menu-footer .perfil-image {
+                display: flex;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+            .menu-footer .perfil-image img {
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                border: 2px solid white;
+                margin-right: 10px;
+                object-fit: cover;
+            }
+            
+            /* Estilos do Modal */
+            .modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.9);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            }
+            .modal.active {
+                display: flex;
+            }
+            .modal-content {
+                
+                width: 90%;
+                max-width: 800px;
+                border-radius: 15px;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .modal-close {
+                position: absolute;
+                top: 10px;
+                right: 20px;
+                font-size: 2rem;
+                color: white;
+                cursor: pointer;
+            }
+            .video-player {
+                width: 100%;
+                height: 0;
+                padding-bottom: 56.25%; /* Proporção 16:9 */
+                position: relative;
+                border-radius: 10px;
+                overflow: hidden;
+            }
+            .video-player iframe {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                border: none;
+            }
+            
+            @media (min-width: 768px) {
+                body {
+                    flex-direction: row;
+                    justify-content: center;
+                    align-items: flex-start;
+                }
+                #app-container {
+                    flex-direction: row;
+                    width: 100%;
+                    max-width: 1200px;
+                    height: 100%;
+                }
+                .container-header {
+                    display: none;
+                }
+                .container-footer {
+                    display: none;
+                }
+                .main-content {
+                    width: calc(100% - 250px);
+                    padding-bottom: 20px;
+                }
+                .menu-oculto {
+                    position: static;
+                    right: auto;
+                    width: 250px;
+                    height: 100%;
+                    background-color: #06224A;
+                    transition: none;
+                    display: flex;
+                }
+                .btn-fecharOculto {
+                    display: none;
+                }
+                .menu-opcoes-barra {
+                    padding: 20px;
+                }
+                .menu-footer {
+                    padding: 20px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app-container">
+            <header class="container-header">
+                <div class="header-top">
+                    <img src="./img/logo.png" alt="">
+                </div>
+                <div class="header-top-line"></div>
+            </header>
+            
+            <div class="main-content">
+                <div class="video-section">
+                    <h2 class="video-series-title">Videos</h2>
+                    <div id="video-list-container" class="videos-container">
+                        <div class="loading-message">Carregando vídeos...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container-menun-inferior">
+                <footer class="container-footer">
+                    <div class="home">
+                        <a href="index.html" id="home-link"><i class="fa-solid fa-house"></i></a>
+                    </div>
+                    <div class="oferta">
+                        <a href="generoso.html" ><i class="fa-solid fa-heart"></i></i></a>
+                    </div>
+                    <div class="datas">
+                        <a href="events.html"><i class="fa-solid fa-calendar-day"></i></a>
+                    </div>
+                    <div class="mais">
+                        <i class="fa-solid fa-bars" id="btn-abrir-menu"></i>
+                    </div>
+                </footer>
+            </div>
+        </div>
+
+        <div class="menu-oculto" id="menu-oculto">
+            <div>
+                <div class="btn-fecharOculto" id="btn-fechar-menu">
+                    x
+                </div>
+               <div class="menu-opcoes">
+                    <div class="menu-opcoes-barra"><a href="biblia.html"><i class="fa-solid fa-book-bible"></i> Bíblia </a></div>
+                    <div class="menu-opcoes-barra"><a href="notes.html"><i class="fa-solid fa-note-sticky"></i> Anotações</a></div>
+                    <div class="menu-opcoes-barra"><a href="leitura-diaria.html"><i class="fa-regular fa-calendar-check"></i> Leitura Diaria</a></div>
+                    <div class="menu-opcoes-barra"><a href="oracao.html"><i class="fa-solid fa-hands-praying"></i> Oração</a></div>
+                    <div class="menu-opcoes-barra"><a href="videos.html"><i class="fa-solid fa-circle-play"></i> Videos</a></div>
+                    <div class="menu-opcoes-barra"><a href="departamentos.html"><i class="fa-solid fa-id-card-clip"></i> Departamentos</a></div>
+                </div>
+            </div>
+            <div class="menu-footer">
+                <div class="perfil-image">
+                    <img id="menu-profile-img" src="https://placehold.co/50x50/E25402/FFFFFF" alt="Perfil">
+                    <div class="user-names">
+                        <span id="menu-user-name">Carregando...</span>
+                        <span id="menu-user-surname"></span>
+                    </div>
+                </div>
+                <div class="menu-opcoes-barra" id="logout-button"><i class="fa-solid fa-right-from-bracket"></i> Sair</div>
+            </div>
+        </div>
+
+        <div id="video-modal" class="modal">
+            <div class="modal-content">
+                <span class="modal-close" id="modal-close-btn">&times;</span>
+                <div class="video-player">
+                    </div>
+            </div>
+        </div>
+
+       <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    let db;
+    let auth;
+    let appId;
+    let isFirebaseInitialized = false;
+
+    // Elementos do DOM
+    const videoListContainer = document.getElementById('video-list-container');
+    const menuOculto = document.getElementById('menu-oculto');
+    const btnAbrirMenu = document.getElementById('btn-abrir-menu');
+    const btnFecharMenu = document.getElementById('btn-fechar-menu');
+    const logoutButton = document.getElementById('logout-button');
+    const menuUserName = document.getElementById('menu-user-name');
+    const menuProfileImg = document.getElementById('menu-profile-img');
+    const videoModal = document.getElementById('video-modal');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+    const videoPlayerContainer = videoModal.querySelector('.video-player');
+
+    // Funções de navegação
+    const showLoginScreen = () => {
+        window.location.href = "index.html";
+    }
+    
+    // Listeners para navegação e menu lateral
+    btnAbrirMenu.addEventListener('click', () => {
+        menuOculto.classList.add('active');
+    });
+    btnFecharMenu.addEventListener('click', () => {
+        menuOculto.classList.remove('active');
+    });
+    logoutButton.addEventListener('click', () => {
+        signOut(auth).then(() => {
+            window.location.href = "index.html";
+        }).catch((error) => {
+            console.error("Erro ao fazer logout:", error);
+        });
+    });
+
+    // Função para buscar e/ou criar o documento de perfil do usuário no Firestore
+    const fetchOrCreateUserProfile = async (user, appId) => {
+        try {
+            const userRef = doc(db, `/artifacts/${appId}/users/${user.uid}/profile/profile_data`);
+            const docSnap = await getDoc(userRef);
+
+            if (docSnap.exists()) {
+                const profileData = docSnap.data();
+                const fullName = `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim();
+                menuUserName.textContent = fullName || 'Usuário';
+                menuProfileImg.src = profileData.profileImageUrl || 'https://placehold.co/50x50/E25402/FFFFFF';
+            } else {
+                console.log("Nenhum documento de perfil encontrado para o usuário. Criando um novo...");
+                
+                const defaultProfile = {
+                    firstName: 'Usuário',
+                    lastName: '',
+                    profileImageUrl: user.photoURL || 'https://placehold.co/50x50/E25402/FFFFFF'
+                };
+
+                await setDoc(userRef, defaultProfile);
+                
+                menuUserName.textContent = defaultProfile.firstName;
+                menuProfileImg.src = defaultProfile.profileImageUrl;
+            }
+        } catch (error) {
+            console.error("Erro ao buscar ou criar dados do perfil:", error);
+            menuUserName.textContent = 'Usuário';
+            menuProfileImg.src = 'https://placehold.co/50x50/E25402/FFFFFF';
+        }
+    };
+
+    // Função para buscar e renderizar os vídeos
+    const fetchAndRenderVideos = (appId) => {
+        const videosRef = collection(db, `/artifacts/default-app-id/public/data/videos`);
+        const q = query(videosRef, orderBy("createdAt", "desc"));
+        onSnapshot(q, (snapshot) => {
+            videoListContainer.innerHTML = '';
+            if (snapshot.empty) {
+                videoListContainer.innerHTML = '<div class="no-classes-message">Nenhum vídeo disponível no momento.</div>';
+                return;
+            }
+
+            snapshot.forEach((doc) => {
+                const video = doc.data();
+                const videoCard = document.createElement('div');
+                videoCard.classList.add('video-card');
+                
+                // CORRIGIDO: Agora o data-video-url usa o campo 'videoUrl'
+                videoCard.setAttribute('data-video-url', video.videoUrl);
+                videoCard.setAttribute('data-video-title', video.text);
+                videoCard.innerHTML = `
+                    <img src="${video.imageUrl}" alt="${video.text}">
+                    <div class="video-info">
+                        <h3>${video.text}</h3>
+                        <p>Série: ${video.serie || 'N/A'}</p>
+                    </div>
+                `;
+                videoListContainer.appendChild(videoCard);
+            });
+
+            document.querySelectorAll('.video-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    try {
+                        const videoUrl = e.currentTarget.getAttribute('data-video-url');
+                        
+                        console.log("URL do Firestore:", videoUrl);
+                        
+                        // Extrai o ID do vídeo
+                        const videoId = extractYouTubeId(videoUrl);
+                        
+                        console.log("ID do vídeo extraído:", videoId);
+                        
+                        if (videoId) {
+                            const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                            videoPlayerContainer.innerHTML = `<iframe src="${embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                            videoModal.classList.add('active');
+                        } else {
+                            console.error('URL do vídeo inválida ou não é do YouTube. URL recebida:', videoUrl);
+                            alert('Não foi possível carregar o vídeo. A URL pode estar incorreta.');
+                        }
+                    } catch (error) {
+                        console.error("Erro ao tentar abrir o modal de vídeo:", error);
+                        alert('Ocorreu um erro ao carregar o vídeo. Por favor, tente novamente.');
+                    }
+                });
+            });
+
+        }, (error) => {
+            console.error("Erro ao carregar vídeos do Firestore:", error);
+            videoListContainer.innerHTML = '<div class="error-message">Erro ao carregar vídeos.</div>';
+        });
+    };
+    
+    // Função para extrair o ID do vídeo do YouTube (melhorada)
+    const extractYouTubeId = (url) => {
+        if (!url) return null;
+        const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+        const match = url.match(regex);
+        return (match && match[1].length === 11) ? match[1] : null;
+    };
+
+    // Listener para fechar o modal
+    modalCloseBtn.addEventListener('click', () => {
+        videoModal.classList.remove('active');
+        // Para o vídeo quando o modal é fechado
+        videoPlayerContainer.innerHTML = '';
+    });
+    videoModal.addEventListener('click', (e) => {
+        if (e.target === videoModal) {
+            videoModal.classList.remove('active');
+            videoPlayerContainer.innerHTML = '';
+        }
+    });
+
+    // Inicializa o Firebase e ouve a autenticação
+    const setupFirebase = async () => {
+        try {
+            let firebaseConfig;
+            if (typeof __firebase_config !== 'undefined') {
+                firebaseConfig = JSON.parse(__firebase_config);
+                appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            } else {
+                // Fallback para ambiente de desenvolvimento local
+                firebaseConfig = {
+                    apiKey: "AIzaSyArteycUkaN5-dClQ28oHSl-NoiL-s4NaY",
+                    authDomain: "app-obpc-49823.firebaseapp.com",
+                    projectId: "app-obpc-49823",
+                    storageBucket: "app-obpc-49823.firebasestorage.app",
+                    messagingSenderId: "690083146419",
+                    appId: "1:690083146419:web:c03301f1aca7dd2d299ec6",
+                    measurementId: "G-KJPSSSC575"
+                };
+                appId = "default-app-id";
+            }
+            
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            isFirebaseInitialized = true;
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    await fetchOrCreateUserProfile(user, appId);
+                    fetchAndRenderVideos(appId);
+                } else {
+                    menuUserName.textContent = 'Usuário';
+                    menuProfileImg.src = 'https://placehold.co/50x50/E25402/FFFFFF';
+                    showLoginScreen();
+                }
+            });
+
+        } catch (e) {
+            console.error("Falha ao inicializar o Firebase. Verifique sua configuração.", e);
+            videoListContainer.innerHTML = '<div class="error-message">Falha ao conectar ao banco de dados.</div>';
+        }
+    };
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+        setupFirebase();
+    });
+</script>
+    </body>
+</html>
