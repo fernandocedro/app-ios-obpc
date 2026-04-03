@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "name": "OBPC School",
   "short_name": "OBPC",
@@ -18,4 +19,26 @@
       "type": "image/png"
     }
   ]
+=======
+{
+  "name": "OBPC School",
+  "short_name": "OBPC",
+  "description": "Aplicativo oficial da OBPC School",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1c4a78",
+  "icons": [
+    {
+      "src": "img/icon.png",
+      "sizes": "192x192",
+      "type": "img/png"
+    },
+    {
+      "src": "img/icon-a.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+>>>>>>> afa5940c321c07fb7ad8ec713da077a42f1d663c
 }

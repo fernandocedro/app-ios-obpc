@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html>
     <head>
@@ -917,4 +918,925 @@
             });
         </script>
     </body>
+=======
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="msapplication-tap-highlight" content="no">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <meta name="color-scheme" content="light dark">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <title>Obpc School - Bíblia Offline</title>
+        <style>
+            /* Reset básico e fontes */
+            @import url('https://fonts.googleapis.com/css2?family=Anton&family=Boldonse&family=Funnel+Sans:ital,wght@0,300..800;1,300..800&family=Manrope:wght@200..800;1,200..800&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Unbounded:wght@200..900&display=swap');
+        
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            html, body {
+                height: 100%; 
+            }
+
+            body {
+                background-color: #1F1C1C;
+                color: #fff;
+                font-family: "Funnel Sans", sans-serif;
+            }
+            
+            /* Contêiner principal Flexbox */
+            #app-container {
+                display: flex;
+                flex-direction: column;
+                height: 100vh; /* Ocupa a altura total da tela */
+            }
+            
+            /* Estilos do cabeçalho */
+            .container-header {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                background-color: #1F1C1C;
+                padding: 15px 0;
+                flex-shrink: 0; /* Impede que o cabeçalho encolha */
+            }
+
+            .header-top {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                padding: 10px;
+            }
+
+            .header-top h1 {
+                font-family: 'Anton', sans-serif;
+                font-size: 1.5rem;
+                letter-spacing: 2px;
+                color: #E25402;
+                margin: 0;
+            }
+
+            .header-top h1 span {
+                color: #fff;
+            }
+
+            .header-top-line {
+                width: 150px;
+                height: 2px;
+                background-color: #E25402;
+                margin: 5px auto;
+            }
+
+            /* Controles de navegação da Bíblia */
+            .bible-controls {
+                display: flex;  
+                flex-direction: column; /* Altera para coluna para melhor organização */
+                align-items: center;
+                gap: 10px;
+                margin: 10px auto;
+                width: 100%;
+                max-width: 800px;
+                padding: 0 20px;
+            }
+            
+            .bible-controls-nav {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 100%;
+                max-width: 400px;
+                gap: 10px;
+            }
+
+            .bible-controls-nav button {
+                flex: 1;
+                min-width: 50px;
+                max-width: 100px;
+                background-color: #000000;
+                color: #fff;
+                border: 1px solid #ffffff;
+                border-radius: 10px;
+                padding: 12px 15px;
+                font-family: "Funnel Sans", sans-serif;
+                font-size: 1rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            }
+
+            .bible-controls-nav button:hover {
+                background-color: #424242;
+                color: #000;
+                border-color: #fff;
+                box-shadow: 0 6px 8px rgba(0, 0, 0, 0.5);
+            }
+            
+            .current-selection-display {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                width: 100%;
+                max-width: 400px;
+                padding: 12px 15px;
+                background-color: #000000;
+                border: 1px solid #ffffff;
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+                text-align: center;
+                font-size: 1.1rem;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .current-selection-display:hover {
+                background-color: #636363;
+                color: #000;
+                border-color: #fff;
+            }
+
+            /* Contêineres de Grid para livros e capítulos */
+            .grid-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: #1F1C1C;
+                z-index: 100;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                padding: 20px;
+            }
+
+            .grid-overlay.active {
+                display: flex;
+            }
+
+            .grid-container {
+                width: 100%;
+                max-width: 800px;
+                display: grid;
+                /* Colunas menores para ficar parecido com a imagem de referência */
+                grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+                gap: 5px; /* Espaço menor entre as células */
+                overflow-y: auto;
+                max-height: 90vh;
+                padding: 15px;
+                background-color: #000;
+                border-radius: 15px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+            }
+            
+            .grid-container h3 {
+                color: #FBBDA1;
+                text-align: center;
+                margin-bottom: 20px;
+                width: 100%;
+                grid-column: 1 / -1;
+            }
+
+            .grid-button {
+                background-color: #1F1C1C;
+                color: #fff;
+                border: 1px solid #333; /* Borda mais sutil como no exemplo */
+                border-radius: 5px; /* Bordas menos arredondadas */
+                padding: 15px 0; /* Ajuste para centralizar o texto num quadrado */
+                text-align: center;
+                font-family: "Funnel Sans", sans-serif;
+                font-size: 1.1rem; /* Fonte um pouco maior para a sigla */
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                aspect-ratio: 1 / 1; /* Força os botões a serem quadrados */
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .grid-button:hover, .grid-button.active {
+                background-color: #fff;
+                color: #000;
+                border-color: #fff;
+            }
+
+            /* Estilo para o botão de fechar */
+            .close-overlay-btn {
+                position: absolute;
+                top: 15px;
+                right: 25px;
+                background: none;
+                border: none;
+                color: #FBBDA1;
+                font-size: 2rem;
+                cursor: pointer;
+                transition: transform 0.2s ease;
+                z-index: 101; /* Garante que o botão fique acima de tudo */
+            }
+
+            .close-overlay-btn:hover {
+                transform: scale(1.2);
+            }
+
+            /* Estilos do overlay de busca */
+            #search-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(73, 73, 73, 0.95);
+                z-index: 100;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+            }
+
+            #search-overlay.active {
+                display: flex;
+            }
+
+            #search-overlay-content {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 90%;
+                max-width: 600px;
+                padding: 20px;
+                background-color: #1F1C1C;
+                border-radius: 15px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+            }
+
+            #search-input-overlay {
+                width: 100%;
+                padding: 15px;
+                border-radius: 10px;
+                border: 2px solid #ffffff;
+                background-color: #000;
+                color: #fff;
+                font-family: "Funnel Sans", sans-serif;
+                font-size: 1.2rem;
+                margin-bottom: 20px;
+                transition: all 0.3s ease;
+            }
+
+            #search-input-overlay:focus {
+                outline: none;
+                border-color: #fff;
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            }
+            
+            .overlay-buttons {
+                display: flex;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .overlay-buttons button {
+                flex: 1;
+                background-color: #080808;
+                color: #ffffff;
+                border: none;
+                padding: 15px;
+                border-radius: 10px;
+                font-size: 1.1rem;
+                font-weight: bold;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+            
+            .overlay-buttons button:hover {
+                background-color: #777777;
+            }
+
+            /* Área de conteúdo da Bíblia */
+            .main-content {
+                flex-grow: 1; /* Permite que o conteúdo principal cresça para ocupar o espaço disponível */
+                overflow-y: auto; /* A chave! Cria uma barra de rolagem apenas para esta seção */
+                padding: 20px;
+                padding-bottom: 130px; /* <--- ESPAÇO ADICIONADO AQUI PARA NÃO FICAR ATRÁS DO MENU */
+            }
+
+            #bible-content {
+                background-color: #000000;
+                padding: 20px;
+                border-radius: 15px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+                max-width: 800px;
+                margin: 20px auto;
+            }
+            
+            #bible-content p {
+                margin-bottom: 15px;
+                line-height: 1.6;
+            }
+            
+            #bible-content h3 {
+                color: #ffffff;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            
+            .loading-message, .error-message {
+                text-align: center;
+                padding: 20px;
+                color: #ffffff;
+            }
+            
+            #search-results {
+                padding: 20px;
+                color: #E25402;
+            }
+
+            /* Estilos do rodapé */
+            .container-menun-inferior {
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+                background-color: transparent;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 10px 0;
+                z-index: 10;
+            }
+
+            .container-footer {
+                display: flex;
+                justify-content: space-around;
+                background-color: rgba(0, 0, 0, 0.9);
+                padding: 10px 0;
+                position: fixed;
+                border-radius: 50px;
+                bottom: 52px;
+                width: 85%;
+                z-index: 10;
+                box-shadow:  rgba(255, 255, 255, 0.3) 0px 4px 15px;
+            }
+            .container-footer a {
+                color: white;
+                font-size: 1.5rem;
+                padding: 10px;
+            }
+            .container-footer i {
+                color: #FBBDA1;
+                font-size: 1.5rem;
+            }
+            
+            /* --- INÍCIO: ESTILOS DO MENU LATERAL --- */
+            .menu-oculto {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 250px;
+                height: 100%;
+                background-color: #000000;
+                z-index: 20;
+                transition: right 0.5s ease-in-out;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                padding-top: 50px;
+                padding-bottom: 20px;
+            }
+
+            .menu-oculto.active {
+                right: 0;
+            }
+
+            .btn-fecharOculto {
+                position: absolute;
+                top: 10px;
+                right: 15px;
+                font-size: 1.5rem;
+                color: white;
+                cursor: pointer;
+            }
+
+            .menu-opcoes-barra {
+                color: white;
+                padding: 15px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                display: flex;
+                align-items: center;
+            }
+
+            .menu-opcoes-barra:hover { background-color: rgba(255, 255, 255, 0.1); }
+
+            .menu-opcoes-barra a {
+                text-decoration: none;
+                color: white;
+                width: 100%;
+            }
+
+            .menu-opcoes-barra i {
+                margin-right: 10px;
+                color: #FBBDA1;
+            }
+
+            .menu-footer {
+                padding: 15px;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .menu-footer .perfil-image {
+                display: flex;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+
+            .menu-footer .perfil-image img {
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                border: 2px solid white;
+                margin-right: 10px;
+                object-fit: cover;
+            }
+            
+            .user-names {
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .user-names span {
+                font-size: 1.1rem;
+            }
+            /* --- FIM: ESTILOS DO MENU LATERAL --- */
+        </style>
+    </head>
+    <body>
+        <div id="app-container">
+            <header class="container-header">
+                <div class="header-top" id="header-logo-section">
+                    <img src="./img/logo.png" alt="">
+                </div>          
+            </header>
+
+            <main class="main-content">
+                <div class="bible-controls">
+                    <div class="current-selection-display" id="selection-display">
+                        <span id="current-book-display">Gênesis</span> <span id="current-chapter-display">Capítulo 1</span>
+                    </div>
+                    <div class="bible-controls-nav">
+                        <button id="prev-chapter"> <i class="fa-solid fa-angle-left"></i> </button>
+                        <button id="search-toggle-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                        <button id="next-chapter"> <i class="fa-solid fa-angle-right"></i> </button>
+                    </div>
+                </div>
+                <div id="bible-content">
+                    <div class="loading-message">Carregando Bíblia...</div>
+                </div>
+            </main>
+
+            <div id="book-overlay" class="grid-overlay">
+                <button id="close-book-btn" class="close-overlay-btn">&times;</button>
+                <div id="book-grid" class="grid-container">
+                    <h3>Escolha o Livro</h3>
+                </div>
+            </div>
+
+            <div id="chapter-overlay" class="grid-overlay">
+                <button id="close-chapter-btn" class="close-overlay-btn">&times;</button>
+                <div id="chapter-grid" class="grid-container">
+                    <h3>Escolha o Capítulo</h3>
+                </div>
+            </div>
+
+            <div id="search-overlay">
+                <div id="search-overlay-content">
+                    <input type="text" id="search-input-overlay" placeholder="Digite o que você procura...">
+                    <div class="overlay-buttons">
+                        <button id="search-button">Buscar</button>
+                        <button id="close-search-btn">Fechar</button>
+                    </div>
+                </div>
+            </div>
+
+             <div class="container-menun-inferior">
+               <footer class="container-footer">
+                    <div class="home">
+                        <a href="index.html" id="home-link"><i class="fa-solid fa-house"></i></a>
+                    </div>
+                    <div class="oferta">
+                        <a href="generoso.html" ><i class="fa-solid fa-heart"></i></i></a>
+                    </div>
+                    <div class="datas">
+                        <a href="events.html"><i class="fa-solid fa-calendar-day"></i></a>
+                    </div>
+                    <div class="mais">
+                        <i class="fa-solid fa-bars" id="btn-abrir-menu"></i>
+                    </div>
+                </footer>
+            </div>
+
+        <div class="menu-oculto" id="menu-oculto">
+            <div>
+                <div class="btn-fecharOculto" id="btn-fechar-menu">
+                    x
+                </div>
+                <div class="menu-opcoes">
+                    <div class="menu-opcoes-barra"><a href="biblia.html"><i class="fa-solid fa-book-bible"></i> Bíblia </a></div>
+                    <div class="menu-opcoes-barra"><a href="index.html"><i class="fa-solid fa-bell"></i> Notificações</a></div>
+                    <div class="menu-opcoes-barra"><a href="notes.html"><i class="fa-solid fa-note-sticky"></i> Anotações</a></div>
+                    <div class="menu-opcoes-barra"><a href="leitura-diaria.html"><i class="fa-regular fa-calendar-check"></i> Leitura Diaria</a></div>
+                    <div class="menu-opcoes-barra"><a href="oracao.html"><i class="fa-solid fa-hands-praying"></i> Oração</a></div>
+                    <div class="menu-opcoes-barra"><a href="videos.html"><i class="fa-solid fa-circle-play"></i> Videos</a></div>
+                    <div class="menu-opcoes-barra"><a href="departamentos.html"><i class="fa-solid fa-id-card-clip"></i> Departamentos</a></div>
+                </div>
+            </div>
+            <div class="menu-footer">
+                <div class="perfil-image">
+                    <img id="menu-profile-img" src="https://placehold.co/50x50/E25402/FFFFFF" alt="Perfil">
+                    <div class="user-names">
+                        <span id="menu-user-name">Carregando...</span>
+                        <span id="menu-user-surname"></span>
+                    </div>
+                </div>
+                <div class="menu-opcoes-barra" id="logout-button"><i class="fa-solid fa-right-from-bracket"></i> Sair</div>
+            </div>
+        </div>
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+            import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+            import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+            
+            // Variáveis de ambiente, se existirem
+            const firebaseConfig = {
+                apiKey: "AIzaSyArteycUkaN5-dClQ28oHSl-NoiL-s4NaY",
+                authDomain: "app-obpc-49823.firebaseapp.com",
+                projectId: "app-obpc-49823",
+                storageBucket: "app-obpc-49823.firebasestorage.app",
+                messagingSenderId: "690083146419",
+                appId: "1:690083146419:web:c03301f1aca7dd2d299ec6",
+                measurementId: "G-KJPSSSC575"
+            };
+            
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const firebaseConfigFromCanvas = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : firebaseConfig;
+            
+            const app = initializeApp(firebaseConfigFromCanvas);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+
+            // --- Código JavaScript da Bíblia (atualizado com cache offline) ---
+            
+            const bibleContent = document.getElementById('bible-content');
+            const prevChapterBtn = document.getElementById('prev-chapter');
+            const nextChapterBtn = document.getElementById('next-chapter');
+            const searchToggleBtn = document.getElementById('search-toggle-btn');
+            const searchOverlay = document.getElementById('search-overlay');
+            const searchInputOverlay = document.getElementById('search-input-overlay');
+            const searchButton = document.getElementById('search-button');
+            const closeSearchBtn = document.getElementById('close-search-btn');
+            const selectionDisplay = document.getElementById('selection-display');
+            const bookOverlay = document.getElementById('book-overlay');
+            const bookGrid = document.getElementById('book-grid');
+            const chapterOverlay = document.getElementById('chapter-overlay');
+            const chapterGrid = document.getElementById('chapter-grid');
+            const currentBookDisplay = document.getElementById('current-book-display');
+            const currentChapterDisplay = document.getElementById('current-chapter-display');
+            const closeBookBtn = document.getElementById('close-book-btn');
+            const closeChapterBtn = document.getElementById('close-chapter-btn');
+            
+            let allBibleData = null; 
+            let currentBookIndex = 0;
+            let currentChapterNumber = 1;
+
+            const BIBLE_JSON_URL = 'https://raw.githubusercontent.com/thiagobodruk/bible/master/json/pt_acf.json';
+            const CACHE_NAME = 'obpc-bible-cache-v1'; // Nome do nosso "cofre" de dados
+
+            // Inicializa a aplicação, carregando o JSON com suporte offline
+            async function initApp() {
+                bibleContent.innerHTML = '<div class="loading-message">Carregando dados da Bíblia...</div>';
+                try {
+                    // Abre o "cofre" de cache do navegador/app
+                    const cache = await caches.open(CACHE_NAME);
+                    
+                    // Verifica se a Bíblia já está salva lá dentro
+                    let response = await cache.match(BIBLE_JSON_URL);
+
+                    if (response) {
+                        console.log("Bíblia carregada do cache local (Offline)!");
+                    } else {
+                        console.log("Baixando Bíblia da internet pela primeira vez...");
+                        response = await fetch(BIBLE_JSON_URL);
+                        
+                        if (!response.ok) {
+                            throw new Error('Não foi possível baixar o arquivo JSON da Bíblia.');
+                        }
+                        
+                        // Guarda uma cópia no cache para as próximas vezes
+                        cache.put(BIBLE_JSON_URL, response.clone());
+                    }
+
+                    allBibleData = await response.json();
+                    
+                    populateBooksGrid();
+
+                    if (allBibleData && allBibleData.length > 0) {
+                        const initialBookAbbrev = allBibleData[currentBookIndex].abbrev;
+                        displayChapter(initialBookAbbrev, currentChapterNumber);
+                    }
+                } catch (error) {
+                    bibleContent.innerHTML = `<div class="error-message">Erro ao carregar a Bíblia. Você precisa de internet apenas na primeira vez que abrir o app.</div>`;
+                    console.error("Erro ao carregar a Bíblia:", error);
+                }
+            }
+
+            // Função auxiliar para capitalizar a primeira letra
+            function capitalizeFirstLetter(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+
+            function populateBooksGrid() {
+                bookGrid.innerHTML = '<h3>Escolha o Livro</h3>'; // Limpa o grid e adiciona o título
+                if (allBibleData) {
+                    allBibleData.forEach((book, index) => {
+                        const button = document.createElement('div');
+                        button.className = 'grid-button';
+                        
+                        // ALTERADO: Usa a abreviação (ex: 'gn') em vez do nome ('Gênesis')
+                        // e capitaliza para ficar 'Gn'
+                        let abbrevText = book.abbrev;
+                        if(abbrevText) {
+                            button.textContent = capitalizeFirstLetter(abbrevText);
+                        } else {
+                            // Fallback caso não tenha abbrev (pega as 2 primeiras letras do nome)
+                            button.textContent = capitalizeFirstLetter(book.name.substring(0, 2));
+                        }
+
+                        button.dataset.index = index;
+                        
+                        button.addEventListener('click', () => {
+                            currentBookIndex = index;
+                            populateChaptersGrid(book);
+                            bookOverlay.classList.remove('active');
+                            chapterOverlay.classList.add('active');
+                        });
+                        bookGrid.appendChild(button);
+                    });
+                }
+            }
+
+            function populateChaptersGrid(book) {
+                chapterGrid.innerHTML = '<h3>Escolha o Capítulo</h3>'; // Limpa o grid e adiciona o título
+                if (book && book.chapters && Array.isArray(book.chapters)) {
+                    for (let i = 1; i <= book.chapters.length; i++) {
+                        const button = document.createElement('div');
+                        button.className = 'grid-button';
+                        button.textContent = i;
+                        button.dataset.chapter = i;
+
+                        button.addEventListener('click', () => {
+                            currentChapterNumber = i;
+                            const selectedBookAbbrev = allBibleData[currentBookIndex].abbrev;
+                            displayChapter(selectedBookAbbrev, currentChapterNumber);
+                            chapterOverlay.classList.remove('active');
+                        });
+                        chapterGrid.appendChild(button);
+                    }
+                }
+            }
+
+            function displayChapter(bookAbbrev, chapterNumber) {
+                if (!allBibleData) {
+                    bibleContent.innerHTML = '<div class="error-message">Dados da Bíblia não carregados. Por favor, recarregue a página.</div>';
+                    return;
+                }
+
+                bibleContent.innerHTML = '<div class="loading-message">Carregando capítulo...</div>';
+                
+                const book = allBibleData.find(b => b.abbrev === bookAbbrev);
+                const chapterIndex = chapterNumber - 1;
+                
+                if (book && book.chapters && book.chapters[chapterIndex] && Array.isArray(book.chapters[chapterIndex])) {
+                    const chapter = book.chapters[chapterIndex];
+                    bibleContent.innerHTML = `<h3>${book.name} - Capítulo ${chapterNumber}</h3>`;
+                    
+                    currentBookDisplay.textContent = book.name;
+                    currentChapterDisplay.textContent = `Capítulo ${chapterNumber}`;
+
+                    chapter.forEach((verseText, index) => {
+                        const p = document.createElement('p');
+                        p.innerHTML = `<span style="font-weight: bold; color: #FBBDA1;">${index + 1}.</span> ${verseText}`;
+                        bibleContent.appendChild(p);
+                    });
+                } else {
+                    bibleContent.innerHTML = '<div class="error-message">Capítulo não encontrado.</div>';
+                }
+            }
+
+            function searchBible(query) {
+                if (!allBibleData) {
+                        bibleContent.innerHTML = '<div class="error-message">Dados da Bíblia não carregados. A busca não pode ser realizada.</div>';
+                        return;
+                }
+
+                const normalizedQuery = query.toLowerCase().trim();
+                if (normalizedQuery.length < 3) {
+                        bibleContent.innerHTML = '<div class="error-message">Por favor, digite pelo menos 3 caracteres para a busca.</div>';
+                        return;
+                }
+
+                bibleContent.innerHTML = '<div class="loading-message">Buscando versículos...</div>';
+                
+                setTimeout(() => {
+                    const results = [];
+                    
+                    allBibleData.forEach(book => {
+                        if (book.chapters && Array.isArray(book.chapters)) {
+                            book.chapters.forEach((chapter, chapterIndex) => {
+                                if (Array.isArray(chapter)) {
+                                    chapter.forEach((verseText, verseIndex) => {
+                                        if (verseText.toLowerCase().includes(normalizedQuery)) {
+                                            results.push({
+                                                bookName: book.name,
+                                                chapterNumber: chapterIndex + 1,
+                                                verseNumber: verseIndex + 1,
+                                                text: verseText
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+
+                    if (results.length > 0) {
+                        bibleContent.innerHTML = `<h3>Resultados da Busca (${results.length})</h3>`;
+                        results.forEach(result => {
+                            const p = document.createElement('p');
+                            p.innerHTML = `<span style="font-weight: bold; color: #FBBDA1;">${result.bookName} ${result.chapterNumber}:${result.verseNumber}</span>: ${result.text}`;
+                            bibleContent.appendChild(p);
+                        });
+                    } else {
+                        bibleContent.innerHTML = '<div class="error-message">Nenhum versículo encontrado.</div>';
+                    }
+                }, 500);
+            }
+
+            // --- Eventos de mudança e clique ---
+
+            selectionDisplay.addEventListener('click', () => {
+                bookOverlay.classList.add('active');
+            });
+
+            prevChapterBtn.addEventListener('click', () => {
+                if (!allBibleData) return;
+                
+                if (currentChapterNumber > 1) {
+                    currentChapterNumber--;
+                } else if (currentBookIndex > 0) {
+                    currentBookIndex--;
+                    const prevBook = allBibleData[currentBookIndex];
+                    currentChapterNumber = prevBook.chapters.length;
+                } else {
+                    return;
+                }
+
+                const selectedBookAbbrev = allBibleData[currentBookIndex].abbrev;
+                displayChapter(selectedBookAbbrev, currentChapterNumber);
+            });
+
+            nextChapterBtn.addEventListener('click', () => {
+                if (!allBibleData) return;
+                
+                const selectedBook = allBibleData[currentBookIndex];
+                if (currentChapterNumber < selectedBook.chapters.length) {
+                    currentChapterNumber++;
+                } else if (currentBookIndex < allBibleData.length - 1) {
+                    currentBookIndex++;
+                    currentChapterNumber = 1;
+                } else {
+                    return;
+                }
+                
+                const selectedBookAbbrev = allBibleData[currentBookIndex].abbrev;
+                displayChapter(selectedBookAbbrev, currentChapterNumber);
+            });
+            
+            searchToggleBtn.addEventListener('click', () => {
+                searchOverlay.classList.add('active');
+                searchInputOverlay.focus();
+            });
+
+            closeSearchBtn.addEventListener('click', () => {
+                searchOverlay.classList.remove('active');
+                searchInputOverlay.value = '';
+            });
+
+            searchButton.addEventListener('click', () => {
+                searchBible(searchInputOverlay.value);
+                searchOverlay.classList.remove('active');
+            });
+            
+            searchInputOverlay.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    searchBible(searchInputOverlay.value);
+                    searchOverlay.classList.remove('active');
+                }
+            });
+
+            closeBookBtn.addEventListener('click', () => {
+                bookOverlay.classList.remove('active');
+            });
+
+            closeChapterBtn.addEventListener('click', () => {
+                chapterOverlay.classList.remove('active');
+            });
+
+            // --- INÍCIO: LÓGICA DO MENU LATERAL E FIREBASE ---
+            const menuOculto = document.getElementById('menu-oculto');
+            const btnAbrirMenu = document.getElementById('btn-abrir-menu');
+            const btnFecharMenu = document.getElementById('btn-fechar-menu');
+            const logoutButton = document.getElementById('logout-button');
+            const menuUserName = document.getElementById('menu-user-name');
+            const menuUserSurname = document.getElementById('menu-user-surname');
+            const menuProfileImg = document.getElementById('menu-profile-img');
+
+            btnAbrirMenu.addEventListener('click', () => {
+                menuOculto.classList.add('active');
+            });
+
+            btnFecharMenu.addEventListener('click', () => {
+                menuOculto.classList.remove('active');
+            });
+            
+            logoutButton.addEventListener('click', () => {
+                signOut(auth).then(() => {
+                    window.location.href = "index.html";
+                }).catch((error) => {
+                    console.error("Erro ao fazer logout:", error);
+                });
+            });
+
+            const fetchOrCreateUserProfile = async (user, appId) => {
+                if (!user) {
+                    console.log("Usuário não fornecido para fetchOrCreateUserProfile.");
+                    return;
+                }
+                try {
+                    const userRef = doc(db, `/artifacts/default-app-id/users/${user.uid}/profile/profile_data`);
+                    const docSnap = await getDoc(userRef);
+
+                    if (docSnap.exists()) {
+                        const profileData = docSnap.data();
+                        const fullName = `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim();
+                        menuUserName.textContent = fullName || 'Usuário';
+                        menuUserSurname.textContent = '';
+                        // Corrigido: Agora o código busca a imagem no campo 'profileImageUrl'
+                        menuProfileImg.src = profileData.profileImageUrl || 'https://placehold.co/50x50/E25402/FFFFFF';
+                    } else {
+                        console.log("Nenhum documento de perfil encontrado. Criando um novo...");
+                        
+                        const defaultProfile = {
+                            firstName: user.displayName ? user.displayName.split(' ')[0] : 'Usuário',
+                            lastName: user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '',
+                            photoURL: user.photoURL || 'https://placehold.co/50x50/E25402/FFFFFF'
+                        };
+
+                        await setDoc(userRef, defaultProfile, { merge: true });
+                        
+                        menuUserName.textContent = defaultProfile.firstName;
+                        menuUserSurname.textContent = defaultProfile.lastName;
+                        menuProfileImg.src = defaultProfile.photoURL;
+                    }
+                } catch (error) {
+                    console.error("Erro ao buscar ou criar dados do perfil:", error);
+                    menuUserName.textContent = 'Usuário';
+                    menuUserSurname.textContent = '';
+                    menuProfileImg.src = 'https://placehold.co/50x50/E25402/FFFFFF';
+                }
+            };
+            // --- FIM: LÓGICA DO MENU LATERAL E FIREBASE ---
+
+            document.addEventListener('DOMContentLoaded', () => {
+                initApp(); // Inicia o app da Bíblia
+                
+                // Inicia a lógica de autenticação e perfil do usuário para o menu
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        await fetchOrCreateUserProfile(user, appId);
+                    } else {
+                        menuUserName.textContent = 'Visitante';
+                        menuUserSurname.textContent = '';
+                        menuProfileImg.src = 'https://placehold.co/50x50/E25402/FFFFFF';
+                    }
+                });
+            });
+        </script>
+    </body>
+>>>>>>> afa5940c321c07fb7ad8ec713da077a42f1d663c
 </html>
