@@ -14,26 +14,27 @@ workflows:
           npm install @capacitor/ios @capacitor/core @capacitor/cli
       - name: Capacitor Sync
         script: |
-          # Atualiza o projeto nativo com o novo appId do seu JSON
+          # Atualiza os arquivos nativos com br.com.obpcschool
           npx cap sync ios
-      - name: Force Bundle ID Update
+      - name: Force Project Update
         script: |
-          # Comando de segurança: troca 'salto' por 'obpcschool' nos arquivos do Xcode
-          sed -i '' 's/br.com.obpc.salto/br.com.obpcschool/g' ios/App/App.xcodeproj/project.pbxproj
+          # Entra no arquivo que aparece na sua foto e troca os IDs na marra
+          # Troca qualquer br.com.obpc.salto por br.com.obpcschool
+          find . -type f -name "project.pbxproj" -exec sed -i '' 's/br.com.obpc.salto/br.com.obpcschool/g' {} +
       - name: Build iOS (.ipa)
         script: |
           cd ios/App
-          # Define a versão da build baseada na data/hora
           agvtool new-version -all $(date +%Y%m%d%H%M)
           
-          # Tenta usar os perfis (Certifique-se de que o perfil no site do Codemagic é br.com.obpcschool)
+          # Tenta instalar os certificados que você subiu no painel
           xcode-project use-profiles --warn-only
           
-          # Build final
+          # Build ignorando erros de interface do Xcode
           xcode-project build-ipa \
             --project "App.xcodeproj" \
             --scheme "App" \
-            --clean
+            --clean \
+            --archive-flags "CODE_SIGNING_REQUIRED=YES CODE_SIGNING_ALLOWED=YES"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
