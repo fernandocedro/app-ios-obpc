@@ -31,25 +31,25 @@ jobs:
           PP_PATH=$RUNNER_TEMP/profile.mobileprovision
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
-          # 1. Decodifica os segredos do GitHub para arquivos temporários no Runner
-          echo "${{ secrets.BUILD_CERTIFICATE_BASE64 }}" | base64 --decode > $CERT_PATH
-          echo "${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}" | base64 --decode > $PP_PATH
+          # 1. Decodifica usando -n para NÃO adicionar quebras de linha invisíveis
+          echo -n "${{ secrets.BUILD_CERTIFICATE_BASE64 }}" | base64 --decode > $CERT_PATH
+          echo -n "${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}" | base64 --decode > $PP_PATH
 
-          # 2. Cria e desbloqueia a Keychain temporária para o processo de assinatura
+          # 2. Cria e desbloqueia a Keychain temporária
           security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
 
-          # 3. Importa o certificado P12 para a Keychain criada
+          # 3. Importa o certificado P12 para a Keychain
           security import $CERT_PATH -k $KEYCHAIN_PATH -P "${{ secrets.P12_PASSWORD }}" -A -T /usr/bin/codesign
           
-          # 4. Autoriza o acesso à chave privada sem intervenção manual
+          # 4. Autoriza o acesso à chave privada
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "${{ secrets.KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
           
-          # 5. Define a keychain temporária na lista de busca do macOS
+          # 5. Define a keychain temporária na lista de busca
           security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | xargs)
           
-          # 6. Instala o Provisioning Profile no diretório padrão do sistema
+          # 6. Instala o Provisioning Profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
@@ -60,7 +60,7 @@ jobs:
           PROJECT_DIR=$(dirname "$PROJECT_PATH")
           cd "$PROJECT_DIR"
           
-          # 1. Archive: Vincula o App ID 'br.com.obpcschool' ao Profile UUID '98897aca...'
+          # 1. Archive
           xcodebuild -project "$(basename "$PROJECT_PATH")" \
             -scheme App \
             -sdk iphoneos \
@@ -70,7 +70,7 @@ jobs:
             CODE_SIGN_IDENTITY="Apple Distribution" \
             PROVISIONING_PROFILE="98897aca-dde3-42a0-b4e7-92d158143474"
 
-          # 2. Export: Gera o arquivo .IPA final para distribuição
+          # 2. Export
           xcodebuild -exportArchive \
             -archivePath $RUNNER_TEMP/App.xcarchive \
             -exportOptionsPlist exportOptions.plist \
