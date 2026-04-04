@@ -49,15 +49,23 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp "$PP_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
 
-          # 5. Extrai o UUID real e o Bundle ID automaticamente
-          UUID=$(grep -aA1 "UUID" "$PP_PATH" | grep -oE "[-A-Z0-9]{36}")
-          TEAM_ID=$(grep -aA1 "ApplicationIdentifierPrefix" "$PP_PATH" | grep -oE "[A-Z0-9]{10}")
-          BUNDLE_ID=$(grep -aA1 "application-identifier" "$PP_PATH" | grep -oE "[A-Z0-9]{10}\..+" | cut -d'.' -f2-)
+          # 5. EXTRAÇÃO ROBUSTA (A correção principal está aqui)
+          # Converte o perfil binário em XML para leitura segura
+          security cms -D -i "$PP_PATH" > provision.xml
+          
+          # Extrai UUID, Team ID e Bundle ID usando ferramentas oficiais da Apple
+          UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" provision.xml)
+          TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print ApplicationIdentifierPrefix:0" provision.xml)
+          FULL_BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print Entitlements:application-identifier" provision.xml)
+          BUNDLE_ID=$(echo $FULL_BUNDLE_ID | sed "s/$TEAM_ID.//")
 
           echo "UUID_REAL=$UUID" >> $GITHUB_ENV
           echo "BUNDLE_ID=$BUNDLE_ID" >> $GITHUB_ENV
           echo "TEAM_ID=$TEAM_ID" >> $GITHUB_ENV
-          echo "Detectado: $BUNDLE_ID (UUID: $UUID)"
+          
+          echo "✅ Dados extraídos com sucesso:"
+          echo "Bundle ID: $BUNDLE_ID"
+          echo "UUID: $UUID"
 
       - name: Build e Export
         run: |
@@ -65,7 +73,7 @@ jobs:
           PROJECT_DIR=$(dirname "$PROJECT_PATH")
           cd "$PROJECT_DIR"
           
-          # Cria o exportOptions.plist dinamicamente para evitar erro de arquivo ausente
+          # Cria o exportOptions.plist dinamicamente
           cat <<EOF > exportOptions.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
