@@ -4,7 +4,6 @@ on:
   workflow_dispatch: 
 
 env:
-  # Garante que as Actions usem a versão estável do Node para o ambiente macOS
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -26,27 +25,32 @@ jobs:
           npx cap sync ios
 
       - name: Importar Certificados
+        env:
+          CERT_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          PP_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+          P12_PASS: ${{ secrets.P12_PASSWORD }}
+          KEY_PASS: ${{ secrets.KEYCHAIN_PASSWORD }}
         run: |
           CERT_PATH=$RUNNER_TEMP/cert.p12
           PP_PATH=$RUNNER_TEMP/profile.mobileprovision
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
-          # 1. Decodifica usando -n para NÃO adicionar quebras de linha invisíveis
-          echo -n "${{ secrets.BUILD_CERTIFICATE_BASE64 }}" | base64 --decode > $CERT_PATH
-          echo -n "${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}" | base64 --decode > $PP_PATH
+          # 1. Decodifica usando printf (mais robusto que echo para evitar quebras de linha)
+          printf '%s' "$CERT_BASE64" | base64 --decode > $CERT_PATH
+          printf '%s' "$PP_BASE64" | base64 --decode > $PP_PATH
 
           # 2. Cria e desbloqueia a Keychain temporária
-          security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
+          security create-keychain -p "$KEY_PASS" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEY_PASS" $KEYCHAIN_PATH
 
-          # 3. Importa o certificado P12 para a Keychain
-          security import $CERT_PATH -k $KEYCHAIN_PATH -P "${{ secrets.P12_PASSWORD }}" -A -T /usr/bin/codesign
+          # 3. Importa o certificado P12 (usando as variáveis ENV para garantir a senha)
+          security import $CERT_PATH -k $KEYCHAIN_PATH -P "$P12_PASS" -A -T /usr/bin/codesign
           
           # 4. Autoriza o acesso à chave privada
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "${{ secrets.KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEY_PASS" $KEYCHAIN_PATH
           
-          # 5. Define a keychain temporária na lista de busca
+          # 5. Define a keychain na lista de busca
           security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | xargs)
           
           # 6. Instala o Provisioning Profile
@@ -55,12 +59,11 @@ jobs:
 
       - name: Build e Export
         run: |
-          # Localiza o projeto e entra na pasta onde está o exportOptions.plist
           PROJECT_PATH=$(find . -name "*.xcodeproj" -print -quit)
           PROJECT_DIR=$(dirname "$PROJECT_PATH")
           cd "$PROJECT_DIR"
           
-          # 1. Archive
+          # Archive com o seu novo UUID: 95cdc501-48b7-4989-93fe-2df3bf5ba356
           xcodebuild -project "$(basename "$PROJECT_PATH")" \
             -scheme App \
             -sdk iphoneos \
@@ -70,7 +73,7 @@ jobs:
             CODE_SIGN_IDENTITY="Apple Distribution" \
             PROVISIONING_PROFILE="95cdc501-48b7-4989-93fe-2df3bf5ba356"
 
-          # 2. Export
+          # Export
           xcodebuild -exportArchive \
             -archivePath $RUNNER_TEMP/App.xcarchive \
             -exportOptionsPlist exportOptions.plist \
