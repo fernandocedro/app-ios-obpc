@@ -3,19 +3,15 @@ name: "Gerar IPA Final"
 on:
   workflow_dispatch: 
 
-# Esta seção resolve o aviso do Node.js 20 de vez
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build:
     runs-on: macos-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.7 # Versão que silencia o aviso
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.0.4 # Versão que silencia o aviso
         with:
           node-version: '24'
 
@@ -28,8 +24,6 @@ jobs:
         run: |
           CERT_PATH=$RUNNER_TEMP/cert.p12
           PP_PATH=$RUNNER_TEMP/profile.mobileprovision
-          
-          # Usando os nomes exatos dos seus Secrets salvos
           echo "${{ secrets.BUILD_CERTIFICATE_BASE64 }}" | base64 --decode > $CERT_PATH
           echo "${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}" | base64 --decode > $PP_PATH
           
@@ -42,28 +36,27 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
-      - name: Build e Export (Atenção aqui)
+      - name: Build e Export
         run: |
-          # Localiza o projeto independente da pasta
+          # Acha o projeto automaticamente
           PROJECT_PATH=$(find . -name "*.xcodeproj" -print -quit)
           PROJECT_DIR=$(dirname "$PROJECT_PATH")
           cd "$PROJECT_DIR"
           
-          # 1. Archive
+          # 1. Archive (Gera o arquivo base)
           xcodebuild -project "$(basename "$PROJECT_PATH")" \
             -scheme App -sdk iphoneos -configuration Release \
             archive -archivePath $RUNNER_TEMP/App.xcarchive \
             CODE_SIGN_STYLE=Manual
 
-          # 2. Export IPA (Exige o arquivo exportOptions.plist na mesma pasta)
+          # 2. Export (Gera o .ipa final)
           xcodebuild -exportArchive \
             -archivePath $RUNNER_TEMP/App.xcarchive \
             -exportOptionsPlist exportOptions.plist \
             -exportPath $RUNNER_TEMP/export
 
-      - name: Disponibilizar IPA para Download
+      - name: Download do IPA
         uses: actions/upload-artifact@v4
         with:
           name: App-OBPC-iOS
-          # Caminho padrão onde o IPA é gerado no runner
           path: /Users/runner/work/_temp/export/*.ipa
