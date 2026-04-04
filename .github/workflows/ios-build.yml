@@ -4,7 +4,6 @@ on:
   workflow_dispatch: 
 
 env:
-  # Isso força o GitHub a usar o Node 24 e evita avisos de depreciação
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -31,42 +30,42 @@ jobs:
           PP_PATH=$RUNNER_TEMP/profile.mobileprovision
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
-          # Decodifica os segredos do GitHub (Base64 -> Arquivo)
+          # 1. Decodifica os segredos (Usando -D no Mac para garantir decodificação limpa)
           echo "${{ secrets.BUILD_CERTIFICATE_BASE64 }}" | base64 --decode > $CERT_PATH
           echo "${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}" | base64 --decode > $PP_PATH
 
-          # Cria uma keychain temporária para isolar os certificados do build
+          # 2. Cria e desbloqueia a Keychain temporária
           security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
 
-          # Importa o certificado P12 para a keychain
-          # O parâmetro -T permite que o codesign use a chave sem pedir senha visual
+          # 3. Importa o P12 (O ponto onde dava erro)
+          # Adicionamos -f para forçar e conferimos a senha
           security import $CERT_PATH -k $KEYCHAIN_PATH -P "${{ secrets.P12_PASSWORD }}" -A -T /usr/bin/codesign
           
-          # Configura a lista de keychains para incluir a nova
+          # 4. Configura as permissões para assinar sem pedir senha visual
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "${{ secrets.KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
+          
+          # 5. Define a keychain na lista de busca
           security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | xargs)
           
-          # Instala o Provisioning Profile no diretório padrão da Apple
+          # 6. Instala o Provisioning Profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
       - name: Build e Export
         run: |
-          # Localiza o projeto Xcode automaticamente
           PROJECT_PATH=$(find . -name "*.xcodeproj" -print -quit)
           PROJECT_DIR=$(dirname "$PROJECT_PATH")
           cd "$PROJECT_DIR"
           
-          # 1. Archive: Cria o pacote bruto do app
+          # Archive
           xcodebuild -project "$(basename "$PROJECT_PATH")" \
-            -scheme App \
-            -sdk iphoneos \
-            -configuration Release \
+            -scheme App -sdk iphoneos -configuration Release \
             archive -archivePath $RUNNER_TEMP/App.xcarchive \
             CODE_SIGN_STYLE=Manual
 
-          # 2. Export: Transforma o Archive em um arquivo .IPA usando o exportOptions.plist
+          # Export
           xcodebuild -exportArchive \
             -archivePath $RUNNER_TEMP/App.xcarchive \
             -exportOptionsPlist exportOptions.plist \
@@ -76,5 +75,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: App-OBPC-iOS
-          path: ${{ runner.temp }}/export/*.ipa
-          retention-days: 5
+          path: /Users/runner/work/_temp/export/*.ipa
