@@ -1,0 +1,27 @@
+name: "Build iOS IPA"
+
+on:
+  workflow_dispatch: # Isso faz aparecer o botão de dar o "play" manual
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'latest'
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npx cap sync ios
+
+      - name: Build IPA (Modo de Teste)
+        run: |
+          cd ios/App
+          # Este comando tenta gerar o arquivo sem pedir assinatura pesada por enquanto
+          xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -allowProvisioningUpdates CODE_SIGNING_ALLOWED=NO
