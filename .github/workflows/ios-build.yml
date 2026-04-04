@@ -32,15 +32,20 @@ jobs:
           
           echo "Arquivos encontrados: $ORIGINAL_P12 e $PP_PATH"
 
-          # 2. Conserto da criptografia (Essencial para macOS)
+          # 2. Conserto da criptografia e extração do NOME exato do certificado
           openssl pkcs12 -in "$ORIGINAL_P12" -out temp.pem -nodes -passin pass:apple
           openssl pkcs12 -export -out certificado_final.p12 -in temp.pem -passout pass:apple
           
-          # 3. Configura Keychain
+          # Extrai o Common Name (CN) para saber se é "Apple Distribution" ou "iPhone Distribution"
+          CERT_IDENTITY=$(openssl x509 -inform pem -in temp.pem -noout -subject -nameopt RFC2253 | sed -n 's/.*CN=\([^,]*\).*/\1/p')
+          echo "CERT_IDENTITY=$CERT_IDENTITY" >> $GITHUB_ENV
+
+          # 3. Configura Keychain de forma robusta
           KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
           security create-keychain -p apple "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p apple "$KEYCHAIN_PATH"
+          security default-keychain -s "$KEYCHAIN_PATH"
 
           # 4. Importa P12 e Perfil
           security import certificado_final.p12 -k "$KEYCHAIN_PATH" -P apple -A -T /usr/bin/codesign
@@ -49,7 +54,7 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp "$PP_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
 
-          # 5. Extração robusta de dados da Apple
+          # 5. Extração de dados do Perfil
           security cms -D -i "$PP_PATH" > provision.xml
           UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" provision.xml)
           TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print ApplicationIdentifierPrefix:0" provision.xml)
@@ -60,7 +65,7 @@ jobs:
           echo "BUNDLE_ID=$BUNDLE_ID" >> $GITHUB_ENV
           echo "TEAM_ID=$TEAM_ID" >> $GITHUB_ENV
           
-          echo "✅ Dados extraídos: $BUNDLE_ID | Team: $TEAM_ID"
+          echo "✅ Identity Detectada: $CERT_IDENTITY"
 
       - name: Build e Export
         run: |
@@ -89,14 +94,14 @@ jobs:
           </plist>
           EOF
 
-          # Archive (Injetando o DEVELOPMENT_TEAM para evitar o Erro 65)
+          # Archive (Usando a Identity e Team detectados automaticamente)
           xcodebuild -project "$(basename "$PROJECT_PATH")" \
             -scheme App \
             -sdk iphoneos \
             -configuration Release \
             archive -archivePath $RUNNER_TEMP/App.xcarchive \
             CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
+            CODE_SIGN_IDENTITY="${{ env.CERT_IDENTITY }}" \
             PROVISIONING_PROFILE_SPECIFIER="${{ env.UUID_REAL }}" \
             DEVELOPMENT_TEAM="${{ env.TEAM_ID }}"
 
