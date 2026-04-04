@@ -4,7 +4,7 @@ on:
   workflow_dispatch: 
 
 env:
-  # Isso força o GitHub a usar o Node 24 e para de exibir o aviso chato
+  # Isso força o GitHub a usar o Node 24 e evita avisos de depreciação
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -22,37 +22,51 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
+          npm install @capacitor/ios @capacitor/core @capacitor/cli
           npx cap sync ios
 
       - name: Importar Certificados
         run: |
           CERT_PATH=$RUNNER_TEMP/cert.p12
           PP_PATH=$RUNNER_TEMP/profile.mobileprovision
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # Decodifica os segredos do GitHub (Base64 -> Arquivo)
           echo "${{ secrets.BUILD_CERTIFICATE_BASE64 }}" | base64 --decode > $CERT_PATH
           echo "${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}" | base64 --decode > $PP_PATH
+
+          # Cria uma keychain temporária para isolar os certificados do build
+          security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
+
+          # Importa o certificado P12 para a keychain
+          # O parâmetro -T permite que o codesign use a chave sem pedir senha visual
+          security import $CERT_PATH -k $KEYCHAIN_PATH -P "${{ secrets.P12_PASSWORD }}" -A -T /usr/bin/codesign
           
-          security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain
-          security import $CERT_PATH -k build.keychain -P "${{ secrets.P12_PASSWORD }}" -A
-          security list-keychains -s build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain
+          # Configura a lista de keychains para incluir a nova
+          security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | xargs)
           
+          # Instala o Provisioning Profile no diretório padrão da Apple
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
       - name: Build e Export
         run: |
+          # Localiza o projeto Xcode automaticamente
           PROJECT_PATH=$(find . -name "*.xcodeproj" -print -quit)
           PROJECT_DIR=$(dirname "$PROJECT_PATH")
           cd "$PROJECT_DIR"
           
-          # Archive
+          # 1. Archive: Cria o pacote bruto do app
           xcodebuild -project "$(basename "$PROJECT_PATH")" \
-            -scheme App -sdk iphoneos -configuration Release \
+            -scheme App \
+            -sdk iphoneos \
+            -configuration Release \
             archive -archivePath $RUNNER_TEMP/App.xcarchive \
             CODE_SIGN_STYLE=Manual
 
-          # Export (Onde o erro costuma acontecer)
+          # 2. Export: Transforma o Archive em um arquivo .IPA usando o exportOptions.plist
           xcodebuild -exportArchive \
             -archivePath $RUNNER_TEMP/App.xcarchive \
             -exportOptionsPlist exportOptions.plist \
@@ -62,4 +76,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: App-OBPC-iOS
-          path: /Users/runner/work/_temp/export/*.ipa
+          path: ${{ runner.temp }}/export/*.ipa
+          retention-days: 5
