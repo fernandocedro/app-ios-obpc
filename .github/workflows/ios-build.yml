@@ -1,4 +1,4 @@
-name: "Build iOS IPA"
+name: "Gerar IPA Final"
 
 on:
   workflow_dispatch: 
@@ -20,22 +20,42 @@ jobs:
           npm install
           npx cap sync ios
 
-      - name: Build IPA (Localização Automática)
+      - name: Importar Certificados
         run: |
-          # Este comando procura onde está o .xcodeproj e entra na pasta dele sozinho
+          CERT_PATH=$RUNNER_TEMP/cert.p12
+          PP_PATH=$RUNNER_TEMP/profile.mobileprovision
+          echo "${{ secrets.BUILD_CERTIFICATE_BASE64 }}" | base64 --decode > $CERT_PATH
+          echo "${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}" | base64 --decode > $PP_PATH
+          
+          security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain
+          security import $CERT_PATH -k build.keychain -P "${{ secrets.P12_PASSWORD }}" -A
+          security list-keychains -s build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" build.keychain
+          
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
+
+      - name: Build e Export
+        run: |
           PROJECT_PATH=$(find . -name "*.xcodeproj" -print -quit)
           PROJECT_DIR=$(dirname "$PROJECT_PATH")
-          
-          echo "Projeto encontrado em: $PROJECT_PATH"
           cd "$PROJECT_DIR"
           
-          # Listar o que tem dentro para confirmar no log
-          ls -F
-          
-          # Rodar o build usando o nome do arquivo que ele encontrou
+          # Archive
           xcodebuild -project "$(basename "$PROJECT_PATH")" \
-            -scheme App \
-            -configuration Release \
-            -sdk iphoneos \
-            CODE_SIGNING_ALLOWED=NO \
-            clean build
+            -scheme App -sdk iphoneos -configuration Release \
+            archive -archivePath $RUNNER_TEMP/App.xcarchive \
+            CODE_SIGN_STYLE=Manual
+
+          # Export IPA
+          xcodebuild -exportArchive \
+            -archivePath $RUNNER_TEMP/App.xcarchive \
+            -exportOptionsPlist exportOptions.plist \
+            -exportPath $RUNNER_TEMP/export
+
+      - name: Artifact Download
+        uses: actions/upload-artifact@v4
+        with:
+          name: App-OBPC-iOS
+          path: /Users/runner/work/_temp/export/*.ipa
