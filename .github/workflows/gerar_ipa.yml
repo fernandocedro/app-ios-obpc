@@ -1,0 +1,73 @@
+name: "Gerar IPA Final"
+
+on:
+  workflow_dispatch: 
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npm install @capacitor/ios @capacitor/core @capacitor/cli
+          npx cap sync ios
+
+      - name: Importar Certificados
+        run: |
+          CERT_PATH=$RUNNER_TEMP/cert.p12
+          PP_PATH=$RUNNER_TEMP/profile.mobileprovision
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # O "-n" impede que o arquivo seja corrompido
+          echo -n "${{ secrets.BUILD_CERTIFICATE_BASE64 }}" | base64 --decode > $CERT_PATH
+          echo -n "${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}" | base64 --decode > $PP_PATH
+
+          security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
+
+          security import $CERT_PATH -k $KEYCHAIN_PATH -P "${{ secrets.P12_PASSWORD }}" -A -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "${{ secrets.KEYCHAIN_PASSWORD }}" $KEYCHAIN_PATH
+          security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | xargs)
+          
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
+
+      - name: Build e Export
+        run: |
+          PROJECT_PATH=$(find . -name "*.xcodeproj" -print -quit)
+          PROJECT_DIR=$(dirname "$PROJECT_PATH")
+          cd "$PROJECT_DIR"
+          
+          xcodebuild -project "$(basename "$PROJECT_PATH")" \
+            -scheme App \
+            -sdk iphoneos \
+            -configuration Release \
+            archive -archivePath $RUNNER_TEMP/App.xcarchive \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE="98897aca-dde3-42a0-b4e7-92d158143474"
+
+          xcodebuild -exportArchive \
+            -archivePath $RUNNER_TEMP/App.xcarchive \
+            -exportOptionsPlist exportOptions.plist \
+            -exportPath $RUNNER_TEMP/export
+
+      - name: Download do IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: App-OBPC-iOS
+          path: /Users/runner/work/_temp/export/*.ipa
+          retention-days: 5
