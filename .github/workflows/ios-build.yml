@@ -26,34 +26,32 @@ jobs:
 
       - name: Importar Certificados
         run: |
-          # Define caminhos baseados na sua estrutura de pastas
           CERT_PATH="./.github/workflows/teste.p12"
           PP_PATH=$(find . -name "*.mobileprovision" -print -quit)
           KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
 
-          # 1. Cria e desbloqueia a Keychain (Injetando segredos diretamente para evitar erros de variável)
-          security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" "$KEYCHAIN_PATH"
+          # 1. Cria e desbloqueia a Keychain (Usando a senha 'apple' direto para teste real)
+          security create-keychain -p apple "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
-          security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" "$KEYCHAIN_PATH"
+          security unlock-keychain -p apple "$KEYCHAIN_PATH"
 
-          # 2. Importa o arquivo P12
+          # 2. Importa o arquivo P12 (Forçando a senha 'apple' que definimos no KeyStore Explorer)
           security import "$CERT_PATH" \
             -k "$KEYCHAIN_PATH" \
-            -P "${{ secrets.P12_PASSWORD }}" \
+            -P apple \
             -A \
             -T /usr/bin/codesign
           
-          # 3. Autoriza o acesso à chave privada para o codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "${{ secrets.KEYCHAIN_PASSWORD }}" "$KEYCHAIN_PATH"
+          # 3. Autoriza o acesso à chave privada
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k apple "$KEYCHAIN_PATH"
           security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | xargs)
           
-          # 4. Instala o Provisioning Profile no diretório do sistema do macOS
+          # 4. Instala o Provisioning Profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp "$PP_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
 
       - name: Build e Export
         run: |
-          # Localiza o projeto Xcode automaticamente
           PROJECT_PATH=$(find . -name "*.xcodeproj" -print -quit)
           PROJECT_DIR=$(dirname "$PROJECT_PATH")
           cd "$PROJECT_DIR"
