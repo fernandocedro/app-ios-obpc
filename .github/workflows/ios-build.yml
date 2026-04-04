@@ -26,38 +26,46 @@ jobs:
 
       - name: Importar Certificados
         run: |
-          # Agora buscando o arquivo legacy na raiz para evitar erro de pasta oculta
-          CERT_PATH="$GITHUB_WORKSPACE/legacy_teste.p12"
+          # 1. Localiza os arquivos originais (Pode estar em qualquer pasta)
+          ORIGINAL_P12=$(find . -name "*.p12" -print -quit)
           PP_PATH=$(find . -name "*.mobileprovision" -print -quit)
           KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
 
-          # 1. Cria e desbloqueia a Keychain
+          echo "Certificado encontrado: $ORIGINAL_P12"
+          
+          # 2. CONSERTO MÁGICO: Reconstrói o P12 dentro do Mac para evitar erro de MAC verification
+          # Primeiro extrai para PEM (passando a senha 'apple')
+          openssl pkcs12 -in "$ORIGINAL_P12" -out temp.pem -nodes -passin pass:apple
+          # Depois reconstrói o P12 no formato nativo do macOS
+          openssl pkcs12 -export -out certificado_final.p12 -in temp.pem -passout pass:apple
+          
+          # 3. Cria e desbloqueia a Keychain
           security create-keychain -p apple "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p apple "$KEYCHAIN_PATH"
 
-          # 2. Importa o P12 (O formato legacy resolve o erro de MAC verification)
-          security import "$CERT_PATH" \
+          # 4. Importa o novo arquivo que acabamos de criar
+          security import certificado_final.p12 \
             -k "$KEYCHAIN_PATH" \
             -P apple \
             -A \
             -T /usr/bin/codesign
           
-          # 3. Autoriza o acesso à chave privada
+          # 5. Autoriza o acesso à chave privada
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k apple "$KEYCHAIN_PATH"
           
-          # 4. Instala o Provisioning Profile no diretório correto do macOS
+          # 6. Instala o Provisioning Profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp "$PP_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
 
       - name: Build e Export
         run: |
-          # Localiza o projeto Xcode automaticamente
+          # Localiza o projeto Xcode
           PROJECT_PATH=$(find . -name "*.xcodeproj" -print -quit)
           PROJECT_DIR=$(dirname "$PROJECT_PATH")
           cd "$PROJECT_DIR"
           
-          # Archive - Gerando o arquivo de build real
+          # Archive
           xcodebuild -project "$(basename "$PROJECT_PATH")" \
             -scheme App \
             -sdk iphoneos \
@@ -67,7 +75,7 @@ jobs:
             CODE_SIGN_IDENTITY="Apple Distribution" \
             PROVISIONING_PROFILE="95cdc501-48b7-4989-93fe-2df3bf5ba356"
 
-          # Export (O arquivo exportOptions.plist deve estar dentro de ios/App/App/)
+          # Export (O arquivo exportOptions.plist deve estar na pasta ios/App/App/)
           xcodebuild -exportArchive \
             -archivePath $RUNNER_TEMP/App.xcarchive \
             -exportOptionsPlist exportOptions.plist \
