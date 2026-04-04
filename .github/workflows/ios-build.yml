@@ -26,16 +26,18 @@ jobs:
 
       - name: Importar Certificados
         run: |
-          # 1. Localiza os arquivos originais
+          # 1. Localiza os arquivos na raiz
           ORIGINAL_P12=$(find . -name "*.p12" -print -quit)
           PP_PATH=$(find . -name "*.mobileprovision" -print -quit)
-          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+          
+          echo "Arquivos encontrados: $ORIGINAL_P12 e $PP_PATH"
 
-          # 2. Conserto da criptografia (Essencial para não dar erro de senha)
+          # 2. Conserto da criptografia (Essencial para macOS)
           openssl pkcs12 -in "$ORIGINAL_P12" -out temp.pem -nodes -passin pass:apple
           openssl pkcs12 -export -out certificado_final.p12 -in temp.pem -passout pass:apple
           
           # 3. Configura Keychain
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
           security create-keychain -p apple "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p apple "$KEYCHAIN_PATH"
@@ -47,9 +49,15 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp "$PP_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
 
-          # 5. Extrai o UUID real do perfil automaticamente (Evita erro de digitação)
-          UUID=$(grep -aA1 "UUID" "$PP_PATH" | grep -o "[-A-Z0-9]\{36\}")
+          # 5. Extrai o UUID real e o Bundle ID automaticamente
+          UUID=$(grep -aA1 "UUID" "$PP_PATH" | grep -oE "[-A-Z0-9]{36}")
+          TEAM_ID=$(grep -aA1 "ApplicationIdentifierPrefix" "$PP_PATH" | grep -oE "[A-Z0-9]{10}")
+          BUNDLE_ID=$(grep -aA1 "application-identifier" "$PP_PATH" | grep -oE "[A-Z0-9]{10}\..+" | cut -d'.' -f2-)
+
           echo "UUID_REAL=$UUID" >> $GITHUB_ENV
+          echo "BUNDLE_ID=$BUNDLE_ID" >> $GITHUB_ENV
+          echo "TEAM_ID=$TEAM_ID" >> $GITHUB_ENV
+          echo "Detectado: $BUNDLE_ID (UUID: $UUID)"
 
       - name: Build e Export
         run: |
@@ -57,7 +65,28 @@ jobs:
           PROJECT_DIR=$(dirname "$PROJECT_PATH")
           cd "$PROJECT_DIR"
           
-          # Archive usando o UUID extraído automaticamente
+          # Cria o exportOptions.plist dinamicamente para evitar erro de arquivo ausente
+          cat <<EOF > exportOptions.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>${{ env.TEAM_ID }}</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>${{ env.BUNDLE_ID }}</key>
+              <string>${{ env.UUID_REAL }}</string>
+            </dict>
+          </dict>
+          </plist>
+          EOF
+
+          # Archive
           xcodebuild -project "$(basename "$PROJECT_PATH")" \
             -scheme App \
             -sdk iphoneos \
