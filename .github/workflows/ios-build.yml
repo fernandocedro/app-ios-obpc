@@ -68,7 +68,7 @@ jobs:
             archive -archivePath $RUNNER_TEMP/App.xcarchive \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Apple Distribution" \
-            PROVISIONING_PROFILE="98897aca-dde3-42a0-b4e7-92d158143474"
+            PROVISIONING_PROFILE="95cdc501-48b7-4989-93fe-2df3bf5ba356"
 
           # 2. Export
           xcodebuild -exportArchive \
