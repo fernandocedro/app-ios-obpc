@@ -25,28 +25,26 @@ jobs:
           npx cap sync ios
 
       - name: Importar Certificados
-        env:
-          P12_PASS: ${{ secrets.P12_PASSWORD }}
-          KEY_PASS: ${{ secrets.KEYCHAIN_PASSWORD }}
         run: |
-          # Caminhos baseados na sua estrutura de pastas atual
           CERT_PATH="./.github/workflows/teste.p12"
-          # Certifique-se de que o profile também está nesta pasta ou ajuste o caminho abaixo
           PP_PATH=$(find . -name "*.mobileprovision" -print -quit)
-          
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
 
-          # 1. Cria e desbloqueia a Keychain
-          security create-keychain -p "$KEY_PASS" $KEYCHAIN_PATH
-          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          security unlock-keychain -p "$KEY_PASS" $KEYCHAIN_PATH
+          # 1. Cria e desbloqueia a Keychain (Injetando o segredo diretamente)
+          security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" "$KEYCHAIN_PATH"
 
-          # 2. Importa o arquivo físico teste.p12
-          security import "$CERT_PATH" -k "$KEYCHAIN_PATH" -P "$P12_PASS" -A -T /usr/bin/codesign
+          # 2. Importa o P12 (Injetando a senha apple diretamente no comando)
+          security import "$CERT_PATH" \
+            -k "$KEYCHAIN_PATH" \
+            -P "${{ secrets.P12_PASSWORD }}" \
+            -A \
+            -T /usr/bin/codesign
           
           # 3. Autoriza o acesso à chave privada
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEY_PASS" $KEYCHAIN_PATH
-          security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | xargs)
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "${{ secrets.KEYCHAIN_PASSWORD }}" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | xargs)
           
           # 4. Instala o Provisioning Profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
@@ -58,7 +56,7 @@ jobs:
           PROJECT_DIR=$(dirname "$PROJECT_PATH")
           cd "$PROJECT_DIR"
           
-          # Archive usando seu UUID atualizado do perfil "OBPC Salto App Store"
+          # Archive usando seu UUID do perfil "OBPC Salto App Store"
           xcodebuild -project "$(basename "$PROJECT_PATH")" \
             -scheme App \
             -sdk iphoneos \
