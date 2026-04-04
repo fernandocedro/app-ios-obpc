@@ -3,15 +3,12 @@ name: "Build iOS IPA"
 on:
   workflow_dispatch: 
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build:
     runs-on: macos-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 # Mantive v4, o aviso sumirá com o setup-node correto
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -21,15 +18,21 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
+          # Sincroniza o Capacitor com a pasta iOS profunda
           npx cap sync ios
 
-      - name: Build IPA (Caminho Corrigido)
+      - name: Build IPA (Teste de Sucesso)
         run: |
-          # Entrando na estrutura profunda que você descreveu
+          # Entrando na pasta exata que você confirmou
           cd ios/App/App
           
-          # Listar arquivos para confirmar que estamos no lugar certo
+          # Listar arquivos para log de segurança
           ls -F
           
-          # Comando de build apontando para o projeto correto
-          xcodebuild -project App.xcodeproj -scheme App -sdk iphoneos -allowProvisioningUpdates CODE_SIGNING_ALLOWED=NO
+          # Comando de build que valida se o projeto está saudável
+          xcodebuild -project App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            CODE_SIGNING_ALLOWED=NO \
+            clean build
