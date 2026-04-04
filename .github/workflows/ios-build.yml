@@ -26,32 +26,34 @@ jobs:
 
       - name: Importar Certificados
         run: |
+          # Define caminhos baseados na sua estrutura de pastas
           CERT_PATH="./.github/workflows/teste.p12"
           PP_PATH=$(find . -name "*.mobileprovision" -print -quit)
           KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
 
-          # 1. Cria e desbloqueia a Keychain (Injetando o segredo diretamente)
+          # 1. Cria e desbloqueia a Keychain (Injetando segredos diretamente para evitar erros de variável)
           security create-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" "$KEYCHAIN_PATH"
 
-          # 2. Importa o P12 (Injetando a senha apple diretamente no comando)
+          # 2. Importa o arquivo P12
           security import "$CERT_PATH" \
             -k "$KEYCHAIN_PATH" \
             -P "${{ secrets.P12_PASSWORD }}" \
             -A \
             -T /usr/bin/codesign
           
-          # 3. Autoriza o acesso à chave privada
+          # 3. Autoriza o acesso à chave privada para o codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "${{ secrets.KEYCHAIN_PASSWORD }}" "$KEYCHAIN_PATH"
           security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | xargs)
           
-          # 4. Instala o Provisioning Profile
+          # 4. Instala o Provisioning Profile no diretório do sistema do macOS
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp "$PP_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
 
       - name: Build e Export
         run: |
+          # Localiza o projeto Xcode automaticamente
           PROJECT_PATH=$(find . -name "*.xcodeproj" -print -quit)
           PROJECT_DIR=$(dirname "$PROJECT_PATH")
           cd "$PROJECT_DIR"
@@ -66,7 +68,7 @@ jobs:
             CODE_SIGN_IDENTITY="Apple Distribution" \
             PROVISIONING_PROFILE="95cdc501-48b7-4989-93fe-2df3bf5ba356"
 
-          # Export
+          # Export do IPA
           xcodebuild -exportArchive \
             -archivePath $RUNNER_TEMP/App.xcarchive \
             -exportOptionsPlist exportOptions.plist \
