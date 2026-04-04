@@ -49,11 +49,8 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp "$PP_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
 
-          # 5. EXTRAÇÃO ROBUSTA (A correção principal está aqui)
-          # Converte o perfil binário em XML para leitura segura
+          # 5. Extração robusta de dados da Apple
           security cms -D -i "$PP_PATH" > provision.xml
-          
-          # Extrai UUID, Team ID e Bundle ID usando ferramentas oficiais da Apple
           UUID=$(/usr/libexec/PlistBuddy -c "Print UUID" provision.xml)
           TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print ApplicationIdentifierPrefix:0" provision.xml)
           FULL_BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print Entitlements:application-identifier" provision.xml)
@@ -63,9 +60,7 @@ jobs:
           echo "BUNDLE_ID=$BUNDLE_ID" >> $GITHUB_ENV
           echo "TEAM_ID=$TEAM_ID" >> $GITHUB_ENV
           
-          echo "✅ Dados extraídos com sucesso:"
-          echo "Bundle ID: $BUNDLE_ID"
-          echo "UUID: $UUID"
+          echo "✅ Dados extraídos: $BUNDLE_ID | Team: $TEAM_ID"
 
       - name: Build e Export
         run: |
@@ -94,7 +89,7 @@ jobs:
           </plist>
           EOF
 
-          # Archive
+          # Archive (Injetando o DEVELOPMENT_TEAM para evitar o Erro 65)
           xcodebuild -project "$(basename "$PROJECT_PATH")" \
             -scheme App \
             -sdk iphoneos \
@@ -102,7 +97,8 @@ jobs:
             archive -archivePath $RUNNER_TEMP/App.xcarchive \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Apple Distribution" \
-            PROVISIONING_PROFILE_SPECIFIER="${{ env.UUID_REAL }}"
+            PROVISIONING_PROFILE_SPECIFIER="${{ env.UUID_REAL }}" \
+            DEVELOPMENT_TEAM="${{ env.TEAM_ID }}"
 
           # Export
           xcodebuild -exportArchive \
