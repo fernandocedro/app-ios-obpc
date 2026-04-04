@@ -8,12 +8,14 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.2.2 # Versão atualizada
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4.2.2 # Versão atualizada
+        uses: actions/setup-node@v4
         with:
           node-version: '24'
+          # Isso ajuda a evitar o erro de depreciação durante a execução
+          check-latest: true 
 
       - name: Install dependencies
         run: |
@@ -22,13 +24,10 @@ jobs:
 
       - name: Build IPA (Teste de Sucesso)
         run: |
-          # Entrando na pasta exata que você confirmou
+          # Caminho profundo que você confirmou
           cd ios/App/App
           
-          # Listar arquivos para log de segurança
-          ls -F
-          
-          # Comando de build que valida se o projeto está saudável
+          # Build sem assinatura apenas para validar o código
           xcodebuild -project App.xcodeproj \
             -scheme App \
             -configuration Release \
