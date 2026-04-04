@@ -1,7 +1,10 @@
 name: "Build iOS IPA"
 
 on:
-  workflow_dispatch: # Isso faz aparecer o botão de dar o "play" manual
+  workflow_dispatch: 
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
@@ -13,15 +16,20 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'latest'
+          node-version: '24'
 
       - name: Install dependencies
         run: |
           npm install
           npx cap sync ios
 
-      - name: Build IPA (Modo de Teste)
+      - name: Build IPA (Caminho Corrigido)
         run: |
-          cd ios/App
-          # Este comando tenta gerar o arquivo sem pedir assinatura pesada por enquanto
-          xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -allowProvisioningUpdates CODE_SIGNING_ALLOWED=NO
+          # Entrando na estrutura profunda que você descreveu
+          cd ios/App/App
+          
+          # Listar arquivos para confirmar que estamos no lugar certo
+          ls -F
+          
+          # Comando de build apontando para o projeto correto
+          xcodebuild -project App.xcodeproj -scheme App -sdk iphoneos -allowProvisioningUpdates CODE_SIGNING_ALLOWED=NO
