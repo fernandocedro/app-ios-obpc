@@ -26,34 +26,27 @@ jobs:
 
       - name: Importar Certificados
         env:
-          CERT_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-          PP_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
           P12_PASS: ${{ secrets.P12_PASSWORD }}
           KEY_PASS: ${{ secrets.KEYCHAIN_PASSWORD }}
         run: |
-          CERT_PATH=$RUNNER_TEMP/cert.p12
-          PP_PATH=$RUNNER_TEMP/profile.mobileprovision
+          # CAMINHOS APONTANDO PARA A SUA PASTA github/workflows
+          CERT_PATH="./github/workflows/teste.p12"
+          PP_PATH="./github/workflows/OBPC_Salto_App_Store.mobileprovision"
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
-          # 1. Decodifica usando printf (mais robusto que echo para evitar quebras de linha)
-          printf '%s' "$CERT_BASE64" | base64 --decode > $CERT_PATH
-          printf '%s' "$PP_BASE64" | base64 --decode > $PP_PATH
-
-          # 2. Cria e desbloqueia a Keychain temporária
+          # 1. Cria e desbloqueia a Keychain
           security create-keychain -p "$KEY_PASS" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security unlock-keychain -p "$KEY_PASS" $KEYCHAIN_PATH
 
-          # 3. Importa o certificado P12 (usando as variáveis ENV para garantir a senha)
+          # 2. Importa o arquivo físico (teste.p12)
           security import $CERT_PATH -k $KEYCHAIN_PATH -P "$P12_PASS" -A -T /usr/bin/codesign
           
-          # 4. Autoriza o acesso à chave privada
+          # 3. Autoriza o acesso
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEY_PASS" $KEYCHAIN_PATH
-          
-          # 5. Define a keychain na lista de busca
           security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | xargs)
           
-          # 6. Instala o Provisioning Profile
+          # 4. Instala o Provisioning Profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
@@ -63,7 +56,7 @@ jobs:
           PROJECT_DIR=$(dirname "$PROJECT_PATH")
           cd "$PROJECT_DIR"
           
-          # Archive com o seu novo UUID: 95cdc501-48b7-4989-93fe-2df3bf5ba356
+          # Archive com o UUID atualizado
           xcodebuild -project "$(basename "$PROJECT_PATH")" \
             -scheme App \
             -sdk iphoneos \
