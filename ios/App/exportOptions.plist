@@ -5,13 +5,13 @@
     <key>method</key>
     <string>app-store</string>
     <key>teamID</key>
-    <string>SEU_TEAM_ID_AQUI</string>
+    <string>NLW32FZ9Z5</string>
     <key>signingStyle</key>
     <string>manual</string>
     <key>provisioningProfiles</key>
     <dict>
         <key>br.com.obpcschool</key>
-        <string>NOME_DO_SEU_PERFIL_NA_APPLE</string>
+        <string>OBPC Salto</string>
     </dict>
 </dict>
 </plist>
