@@ -8,17 +8,16 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # Mantive v4, o aviso sumirá com o setup-node correto
+        uses: actions/checkout@v4.2.2 # Versão atualizada
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.2.2 # Versão atualizada
         with:
           node-version: '24'
 
       - name: Install dependencies
         run: |
           npm install
-          # Sincroniza o Capacitor com a pasta iOS profunda
           npx cap sync ios
 
       - name: Build IPA (Teste de Sucesso)
