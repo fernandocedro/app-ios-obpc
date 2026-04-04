@@ -3,10 +3,6 @@ name: "Build iOS IPA"
 on:
   workflow_dispatch: 
 
-env:
-  # Isso silencia o aviso e força o uso do Node 24 em todas as ações
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build:
     runs-on: macos-latest
@@ -24,13 +20,20 @@ jobs:
           npm install
           npx cap sync ios
 
-      - name: Build IPA (Teste de Sucesso)
+      - name: Build IPA (Localização Automática)
         run: |
-          # Caminho profundo confirmado: IOS / APP / APP
-          cd ios/App/App
+          # Este comando procura onde está o .xcodeproj e entra na pasta dele sozinho
+          PROJECT_PATH=$(find . -name "*.xcodeproj" -print -quit)
+          PROJECT_DIR=$(dirname "$PROJECT_PATH")
           
-          # Build de release sem assinatura para validar os arquivos
-          xcodebuild -project App.xcodeproj \
+          echo "Projeto encontrado em: $PROJECT_PATH"
+          cd "$PROJECT_DIR"
+          
+          # Listar o que tem dentro para confirmar no log
+          ls -F
+          
+          # Rodar o build usando o nome do arquivo que ele encontrou
+          xcodebuild -project "$(basename "$PROJECT_PATH")" \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
