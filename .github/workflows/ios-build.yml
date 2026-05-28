@@ -24,6 +24,14 @@ jobs:
           npm install @capacitor/ios @capacitor/core @capacitor/cli
           npx cap sync ios
 
+      - name: Atualizar Build Number Automaticamente
+        run: |
+          cd ios/App
+          # Força o Xcode a aceitar o gerenciamento genérico de versão se não estiver ativo
+          sed -i '' 's/VERSIONING_SYSTEM = "internal";/VERSIONING_SYSTEM = "apple-generic";/g' App.xcodeproj/project.pbxproj || true
+          # Altera o CFBundleVersion para o número sequencial do run do GitHub Actions
+          xcrun agvtool new-version -all ${{ github.run_number }}
+
       - name: Importar Certificados
         run: |
           # 1. Localiza os arquivos na raiz
